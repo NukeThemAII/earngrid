@@ -1,80 +1,49 @@
-# 🏗 Scaffold-ETH 2
+# EarnGrid – EulerEarn-powered ERC-4626 vault
 
-<h4 align="center">
-  <a href="https://docs.scaffoldeth.io">Documentation</a> |
-  <a href="https://scaffoldeth.io">Website</a>
-</h4>
+EarnGrid is a DeFi yield vault that wraps EulerEarn. Users deposit USDC/USDT into an ERC-4626 vault (`EarnGridVault4626`) that routes funds into a strategy (`StrategyERC4626`) targeting an EulerEarn ERC-4626 vault. A protocol performance fee (capped at 10%) is taken as fee shares minted to the fee recipient on positive yield only.
 
-🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
-
-⚙️ Built using NextJS, RainbowKit, Foundry, Wagmi, Viem, and Typescript.
-
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🪝 **[Custom hooks](https://docs.scaffoldeth.io/hooks/)**: Collection of React hooks wrapper around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with typescript autocompletion.
-- 🧱 [**Components**](https://docs.scaffoldeth.io/components/): Collection of common web3 components to quickly build your frontend.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
-
-![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
+## Stack and layout
+- Next.js 15 + React 19 + Tailwind + RainbowKit/Wagmi/Viem in `packages/nextjs`.
+- Foundry contracts in `packages/foundry` (Solidity 0.8.x, OpenZeppelin).
+- Monorepo managed with Yarn workspaces (`yarn@3.2.3`); Node >= 20.18.3.
+- Key contracts: `EarnGridVault4626`, `StrategyERC4626`, `strategies/EulerEarnStrategy`.
+- Project structure:
+  - `packages/nextjs` – frontend app (RainbowKit/Wagmi/Viem, Tailwind).
+  - `packages/foundry` – Solidity contracts, scripts, tests.
+  - `packages/foundry/contracts/src` – core contracts.
+  - `packages/foundry/test` – Foundry tests and mocks.
 
 ## Requirements
+- Node >= 20.18.3 (current local: 24.11.1)
+- Yarn (Corepack-enabled)
+- Foundry (`curl -L https://foundry.paradigm.xyz | bash && foundryup`)
+- Git
 
-Before you begin, you need to install the following tools:
-
-- [Node (>= v20.18.3)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
-
-## Quickstart
-
-To get started with Scaffold-ETH 2, follow the steps below:
-
-1. Install dependencies if it was skipped in CLI:
-
-```
-cd my-dapp-example
+## Setup
+```bash
 yarn install
 ```
 
-2. Run a local network in the first terminal:
+Environment:
+- Copy `packages/nextjs/.env.example` to `.env.local` and fill values (RPC, WalletConnect project ID, contract addresses). Do not commit secrets.
+- Copy `packages/foundry/.env.example` to `.env` and fill values (RPC URLs, `CHAIN_ID`, `DEPLOYER_PRIVATE_KEY`, EulerEarn vault addresses for USDC/USDT, block explorer keys).
 
-```
-yarn chain
-```
+## Development
+- Start local chain (Foundry anvil via scaffold script): `yarn chain`
+- Deploy contracts to local chain (current scaffold scripts): `yarn deploy`
+- Frontend dev server: `yarn start` (Next.js at http://localhost:3000)
+- Contract tests: `yarn foundry:test` (or `forge test` inside `packages/foundry`)
+- Lint frontend/format: `yarn lint` / `yarn format`
 
-This command starts a local Ethereum network using Foundry. The network runs on your local machine and can be used for testing and development. You can customize the network configuration in `packages/foundry/foundry.toml`.
+## Contract architecture
+- `EarnGridVault4626`: ERC-4626 vault with a capped 10% performance fee minted as shares to the fee recipient on positive yield only. Ownable admin controls performance fee, fee recipient, and pluggable strategy. Deposits/mints auto-push assets to the active strategy; withdraw/redeem pull back from the strategy as needed. Reentrancy guards wrap entrypoints.
+- `StrategyERC4626`: abstract ERC-4626 strategy base with vault-only `invest/divest/harvest`, totalAssets passthrough to the target ERC-4626, and allowance resets for safer approvals.
+- `EulerEarnStrategy`: concrete implementation that approves and deposits into a configured EulerEarn ERC-4626 vault.
 
-3. On a second terminal, deploy the test contract:
+## Testing
+- Contracts: `yarn foundry:test` (from repo root) or `forge test` inside `packages/foundry`.
+- Frontend lint/tests: `yarn lint` / `yarn test` (when added).
 
-```
-yarn deploy
-```
-
-This command deploys a test smart contract to the local network. The contract is located in `packages/foundry/contracts` and can be modified to suit your needs. The `yarn deploy` command uses the deploy script located in `packages/foundry/script` to deploy the contract to the network. You can also customize the deploy script.
-
-4. On a third terminal, start your NextJS app:
-
-```
-yarn start
-```
-
-Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the `Debug Contracts` page. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
-
-Run smart contract test with `yarn foundry:test`
-
-- Edit your smart contracts in `packages/foundry/contracts`
-- Edit your frontend homepage at `packages/nextjs/app/page.tsx`. For guidance on [routing](https://nextjs.org/docs/app/building-your-application/routing/defining-routes) and configuring [pages/layouts](https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts) checkout the Next.js documentation.
-- Edit your deployment scripts in `packages/foundry/script`
-
-
-## Documentation
-
-Visit our [docs](https://docs.scaffoldeth.io) to learn how to start building with Scaffold-ETH 2.
-
-To know more about its features, check out our [website](https://scaffoldeth.io).
-
-## Contributing to Scaffold-ETH 2
-
-We welcome contributions to Scaffold-ETH 2!
-
-Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/scaffold-eth-2/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-ETH 2.
+## TODO
+- Review and, if needed, upgrade Next/React/wagmi/RainbowKit/viem to the latest stable compatible versions after scaffold baseline.
+- Add deployment/config scripts for mainnet targets once EulerEarn vault addresses are finalized.

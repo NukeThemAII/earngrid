@@ -1,0 +1,11 @@
+# EarnGrid Agent Log
+
+- 2025-11-21 06:21:17 UTC — Bootstrapped Scaffold-ETH 2 via `npx create-eth@latest -s foundry --skip-install` (project name earngrid), moved scaffolded contents to repo root, removed duplicate nested folder, ran `yarn install` and `yarn foundry:test` to verify Foundry workspace. Recorded versions: Node 24.11.1, Yarn 3.2.3 (workspaces), Next 15.2.3, React 19.0.0, wagmi 2.16.4, RainbowKit 2.2.8, viem 2.34.0, Foundry 1.4.3. TODO: review upgrading frontend deps to latest stable compatible versions in a follow-up.
+  Files touched: README.md (project overview + setup), LOG.md.
+  Commands: `corepack enable`, `yarn install`, `npx create-eth@latest -s foundry --skip-install`, `rsync -a earngrid/ ./` (then removed nested), `yarn foundry:test`.
+- 2025-11-21 06:33:47 UTC — Implemented EarnGrid contracts and tests. Added ERC-4626 vault (`EarnGridVault4626`) with high-water performance fee minting (max 10%), Ownable admin controls, auto invest/withdraw into pluggable strategies, and safety guards. Added `StrategyERC4626` base and `EulerEarnStrategy` targeting an ERC-4626 (e.g., EulerEarn). Created mock USDC and mock ERC-4626 vault for tests, plus Foundry tests covering deposits, withdrawals, fees on positive yield only, and access controls. Updated Foundry configuration to `contracts/src`, removed scaffold sample contract/test. Updated README with architecture and testing commands.
+  Files touched: packages/foundry/contracts/src/*, packages/foundry/test/EarnGridVault.t.sol, packages/foundry/test/mocks/*, packages/foundry/foundry.toml, README.md.
+  Commands: `forge test`.
+- 2025-11-21 06:42:40 UTC — Hardened vault entrypoints with zero-share guard, added test coverage for zero-share deposit/mint, and kept Foundry tests passing. Cleaned `.env.example` files for Foundry and Next.js with EarnGrid-specific placeholders (RPC URLs, chain ID, EulerEarn vault addresses). Refreshed README for GitHub readiness (layout, env instructions, commands).
+  Files touched: packages/foundry/contracts/src/EarnGridVault4626.sol, packages/foundry/test/EarnGridVault.t.sol, packages/foundry/.env.example, packages/nextjs/.env.example, README.md.
+  Commands: `forge test`.
