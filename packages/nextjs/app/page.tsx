@@ -48,14 +48,15 @@ const formatPercentFromBps = (bps?: bigint) => {
   return `${Number(bps) / 100}%`;
 };
 
+const isNonZeroAddress = (addr?: string | `0x${string}`) => !!addr && addr !== zeroAddress;
+
 const Home: NextPage = () => {
   const { address: connectedAddress, chain: walletChain } = useAccount();
   const { targetNetwork } = useTargetNetwork();
   const envVaultAddress = process.env.NEXT_PUBLIC_EARNGRID_VAULT_ADDRESS as `0x${string}` | undefined;
   const envStrategyAddress = process.env.NEXT_PUBLIC_EULER_STRATEGY_ADDRESS as `0x${string}` | undefined;
   const { data: vaultContract } = useDeployedContractInfo({ contractName: "EarnGridVault4626" } as any);
-  const vaultAddress =
-    (envVaultAddress && envVaultAddress !== zeroAddress ? envVaultAddress : vaultContract?.address) ?? undefined;
+  const vaultAddress = isNonZeroAddress(envVaultAddress) ? envVaultAddress : vaultContract?.address;
   const { writeContractAsync: writeVaultRaw, isPending: isVaultMining } = useWriteContract();
   const { writeContractAsync: writeErc20 } = useWriteContract();
 
@@ -122,7 +123,7 @@ const Home: NextPage = () => {
     query: { enabled: !!vaultAddress && userShares !== undefined },
   }) as { data?: bigint };
 
-  const strategyAddress = strategyAddressOnChain ?? envStrategyAddress;
+  const strategyAddress = isNonZeroAddress(envStrategyAddress) ? envStrategyAddress : strategyAddressOnChain;
 
   const { data: strategyAssets } = useReadContract({
     address: (strategyAddress as `0x${string}` | undefined) ?? zeroAddress,
@@ -241,12 +242,16 @@ const Home: NextPage = () => {
 
   const handleApprove = async () => {
     if (!connectedAddress || !assetAddress || !vaultAddress || !ensureNetwork()) return;
+    if (!depositAmountParsed) {
+      notification.error("Enter an amount to approve");
+      return;
+    }
     try {
       await writeErc20({
         address: assetAddress as `0x${string}`,
         abi: erc20Abi,
         functionName: "approve",
-        args: [vaultAddress as `0x${string}`, parseUnits("1000000000", decimals)],
+        args: [vaultAddress as `0x${string}`, depositAmountParsed],
       });
     } catch (err) {
       console.error(err);
@@ -256,7 +261,7 @@ const Home: NextPage = () => {
   const explorerUrl = targetNetwork.blockExplorers?.default.url;
   const toExplorer = (path: string) => (explorerUrl ? `${explorerUrl}/${path}` : undefined);
 
-  const isConfigured = !!vaultAddress;
+  const isConfigured = isNonZeroAddress(vaultAddress);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-50">
@@ -361,14 +366,14 @@ const Home: NextPage = () => {
                   <button
                     onClick={handleApprove}
                     className="flex-1 rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-2 text-sm hover:border-indigo-500"
-                    disabled={!vaultAddress || !assetAddress}
+                    disabled={!isConfigured || !assetAddress || !depositAmountParsed}
                   >
                     Approve vault
                   </button>
                   <button
                     onClick={handleDeposit}
                     className="flex-1 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold hover:bg-indigo-500 disabled:opacity-50"
-                    disabled={!vaultAddress || !depositAmountParsed || isVaultMining}
+                    disabled={!isConfigured || !depositAmountParsed || isVaultMining}
                   >
                     Deposit
                   </button>
@@ -396,7 +401,7 @@ const Home: NextPage = () => {
                 <button
                   onClick={handleWithdraw}
                   className="w-full mt-3 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold hover:bg-emerald-500 disabled:opacity-50"
-                  disabled={!vaultAddress || !withdrawAmountParsed || isVaultMining}
+                  disabled={!isConfigured || !withdrawAmountParsed || isVaultMining}
                 >
                   Withdraw
                 </button>

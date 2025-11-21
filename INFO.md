@@ -23,9 +23,11 @@ address public feeRecipient;
 
 Bookkeeping for fee computation; some options:
 
-track uint256 public lastTotalAssets; and compute yield as totalAssets - lastTotalAssets,
+track `uint256 public highWaterMark;` (highest share price achieved).
 
-or adopt a more formal “fee shares” pattern (mint shares equal to yield * fee / (totalAssets - yield)).
+Fee is charged only if `currentSharePrice > highWaterMark`.
+
+`fee = (currentSharePrice - highWaterMark) * totalSupply`.
 
 Core invariants
 

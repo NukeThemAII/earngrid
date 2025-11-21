@@ -45,6 +45,20 @@ Environment:
 - Contracts: `yarn foundry:test` (from repo root) or `forge test` inside `packages/foundry` (includes fee HWM regression: `FeeOnRecovery.t.sol`).
 - Frontend lint/tests: `yarn lint` / `yarn test` (when added).
 
+## Deployment (Foundry)
+Env-driven deployment script targets any chain (e.g., Base id 8453):
+1. Set `.env` in `packages/foundry` with:
+   - `ASSET` (e.g., Base USDC address)
+   - `EULER_EARN_VAULT` (EulerEarn ERC-4626 target)
+   - `FEE_RECIPIENT`, `PERFORMANCE_FEE_BPS` (<=1000), `VAULT_NAME`, `VAULT_SYMBOL`
+   - `BASE_RPC_URL` (or relevant RPC) and `DEPLOYER_PRIVATE_KEY`, `CHAIN_ID`
+2. Deploy:
+```bash
+cd packages/foundry
+forge script script/Deploy.s.sol --rpc-url $BASE_RPC_URL --broadcast
+```
+3. Populate `NEXT_PUBLIC_CHAIN_ID` (e.g., 8453), `NEXT_PUBLIC_RPC_URL`, `NEXT_PUBLIC_EARNGRID_VAULT_ADDRESS`, `NEXT_PUBLIC_EULER_STRATEGY_ADDRESS`, and `NEXT_PUBLIC_EULER_EARN_VAULT_ADDRESS` in `packages/nextjs/.env.local`.
+
 ## TODO
 - Review and, if needed, upgrade Next/React/wagmi/RainbowKit/viem to the latest stable compatible versions after scaffold baseline.
 - Add deployment/config scripts for mainnet targets once EulerEarn vault addresses are finalized.

@@ -1,36 +1,34 @@
-# Implementation Plan - Fix High-Water Mark Bug
+# Implementation Plan - Safety & UX Improvements
 
 ## Goal Description
-Fix the critical High-Water Mark (HWM) bug in `EarnGridVault4626.sol` where fees are charged on recovery from losses. The fix involves changing the fee mechanism to track the **highest share price** (assets per share) achieved, rather than the total assets checkpoint. This ensures fees are only charged when the *value* of a user's share increases above the previous peak.
+Implement essential safety features and UX improvements to make the dApp production-ready (v1.1).
+1.  **Contract Safety**: Add `Pausable` functionality to `EarnGridVault4626` to allow the owner to freeze deposits/withdrawals in an emergency.
+2.  **Frontend Safety**: Gate UI interactions when contract addresses are not configured (Zero Address).
+3.  **Frontend UX**: Change token approval to use the exact deposit amount instead of a hardcoded 1 billion.
 
 ## User Review Required
-> [!IMPORTANT]
-> **Fee Model Change**: The fee logic is changing from a "Total Assets Checkpoint" to a "Share Price High-Water Mark". This is a standard industry practice for pooled funds but changes the accounting slightly.
+> [!NOTE]
+> **Pausable**: The owner will have the ability to pause the contract. This is a centralization risk but standard for v1 safety.
 
 ## Proposed Changes
 
 ### Smart Contracts
 
 #### [MODIFY] [EarnGridVault4626.sol](file:///home/x/earngrid/packages/foundry/contracts/src/EarnGridVault4626.sol)
-- Remove `feeCheckpoint` (uint256).
-- Add `highWaterMark` (uint256) representing the highest recorded share price (assets per unit of share).
-- Update `_collectPerformanceFee`:
-    - Calculate current share price: `totalAssets() * 10**decimals / totalSupply()`.
-    - If `currentPrice > highWaterMark`:
-        - Calculate yield per share: `currentPrice - highWaterMark`.
-        - Calculate total yield: `yieldPerShare * totalSupply`.
-        - Mint fee shares based on this yield.
-        - Update `highWaterMark = currentPrice`.
-    - Handle edge case: Initial deposit sets the initial HWM (usually 1:1).
+- Inherit from `Pausable` (OpenZeppelin).
+- Add `pause()` and `unpause()` functions restricted to `onlyOwner`.
+- Add `whenNotPaused` modifier to `deposit`, `mint`, `withdraw`, `redeem`.
 
-### Tests
+### Frontend
 
-#### [MODIFY] [FeeOnRecovery.t.sol](file:///home/x/earngrid/packages/foundry/test/FeeOnRecovery.t.sol)
-- Update the test to assert that **NO** fees are charged on recovery.
-- Add a new test case for "New All-Time High" to ensure fees *are* charged when we actually make a profit.
+#### [MODIFY] [page.tsx](file:///home/x/earngrid/packages/nextjs/app/page.tsx)
+- **Zero Address Gating**: Disable "Deposit", "Withdraw", and "Approve" buttons if `vaultAddress` or `assetAddress` is zero/undefined. Show a clear "Not Configured" warning.
+- **Exact Approval**: Update `handleApprove` to approve exactly `depositAmountParsed` instead of `1000000000`.
 
 ## Verification Plan
 
 ### Automated Tests
-- Run `forge test --match-contract FeeOnRecoveryTest` to verify the fix.
-- Run `forge test` to ensure no regressions in other vault behavior.
+- Add a test case in `EarnGridVault.t.sol` to verify that `deposit` reverts when paused.
+
+### Manual Verification
+- Verify in the code that the UI buttons are disabled when addresses are missing.
