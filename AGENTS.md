@@ -35,9 +35,9 @@ We are **not** re-implementing EulerEarn. We build a thin, opinionated layer on 
        - `setStrategy(address)` (with sanity checks + optional timelock).
        - `setPerformanceFee(uint256)` (max 10%).
        - `setFeeRecipient(address)`.
-   - **Performance fee pattern:**
-     - Mirror EulerEarn’s general idea: performance fee is taken as **extra shares minted to the fee recipient** when `totalAssets` has grown.
-     - Use a high-water-mark style accounting: compare current `totalAssets` vs “fee-adjusted” assets to compute yield and mint fee shares.
+- **Performance fee pattern:**
+  - Mirror EulerEarn’s general idea: performance fee is taken as **extra shares minted to the fee recipient** when `totalAssets` has grown.
+  - Use a **share-price high-water mark**: compare current price-per-share vs the previous high; never lower the HWM on losses, and only mint fee shares on new highs to avoid charging on recoveries.
 
 2. **StrategyERC4626 (abstract strategy base)**
    - Abstract contract that standardizes how the vault interacts with any ERC-4626 strategy.

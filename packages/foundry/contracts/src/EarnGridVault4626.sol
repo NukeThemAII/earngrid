@@ -25,7 +25,7 @@ contract EarnGridVault4626 is ERC4626, Ownable, ReentrancyGuard {
     IStrategyERC4626 public strategy;
     address public feeRecipient;
     uint256 public performanceFeeBps;
-    uint256 public feeCheckpoint;
+    uint256 public highWaterMark; // Scaled by 10**decimals
 
     event StrategyUpdated(address indexed newStrategy);
     event FeeRecipientUpdated(address indexed newRecipient);
@@ -52,6 +52,7 @@ contract EarnGridVault4626 is ERC4626, Ownable, ReentrancyGuard {
         underlying = asset_;
         feeRecipient = feeRecipient_;
         performanceFeeBps = performanceFeeBps_;
+        highWaterMark = 10 ** decimals(); // Initial HWM is 1.0
     }
 
     /**
@@ -74,7 +75,6 @@ contract EarnGridVault4626 is ERC4626, Ownable, ReentrancyGuard {
         if (previewDeposit(assets) == 0) revert ZeroShares();
         uint256 shares = super.deposit(assets, receiver);
         _deployToStrategy(assets);
-        _refreshCheckpoint();
         return shares;
     }
 
@@ -84,7 +84,6 @@ contract EarnGridVault4626 is ERC4626, Ownable, ReentrancyGuard {
         uint256 assets = previewMint(shares);
         uint256 mintedShares = super.mint(shares, receiver);
         _deployToStrategy(assets);
-        _refreshCheckpoint();
         return mintedShares;
     }
 
@@ -97,7 +96,6 @@ contract EarnGridVault4626 is ERC4626, Ownable, ReentrancyGuard {
         _collectPerformanceFee();
         _pullFromStrategyIfNeeded(assets);
         uint256 burnedShares = super.withdraw(assets, receiver, owner);
-        _refreshCheckpoint();
         return burnedShares;
     }
 
@@ -111,7 +109,6 @@ contract EarnGridVault4626 is ERC4626, Ownable, ReentrancyGuard {
         uint256 assets = previewRedeem(shares);
         _pullFromStrategyIfNeeded(assets);
         uint256 redeemedAssets = super.redeem(shares, receiver, owner);
-        _refreshCheckpoint();
         return redeemedAssets;
     }
 
@@ -196,43 +193,73 @@ contract EarnGridVault4626 is ERC4626, Ownable, ReentrancyGuard {
     }
 
     function _collectPerformanceFee() internal {
-        uint256 assets = super.totalAssets() + (address(strategy) == address(0) ? 0 : strategy.totalAssets());
+        uint256 assets = totalAssets();
         uint256 supply = totalSupply();
 
-        // Initialize checkpoint or handle empty supply.
         if (supply == 0) {
-            feeCheckpoint = assets;
+            // No shares, reset HWM to 1.0 (or keep as is, but 1.0 is standard start)
+            highWaterMark = 10 ** decimals();
             return;
         }
 
-        if (feeCheckpoint == 0) {
-            feeCheckpoint = assets;
+        // Calculate current share price (scaled by 10**decimals)
+        // Price = Assets / Supply
+        // We use 10**decimals as the base unit for price (like 1.000000 USDC)
+        uint256 currentPrice = (assets * (10 ** decimals())) / supply;
+
+        if (currentPrice <= highWaterMark) {
             return;
         }
 
-        uint256 checkpoint = feeCheckpoint;
-        if (assets <= checkpoint) {
-            feeCheckpoint = assets;
-            return;
-        }
-
-        uint256 yieldAssets = assets - checkpoint;
-        uint256 feeAssets = (yieldAssets * performanceFeeBps) / BPS;
+        // Calculate yield per share
+        uint256 yieldPerShare = currentPrice - highWaterMark;
+        
+        // Total yield generated since last HWM
+        // Total Yield = YieldPerShare * Supply / 10**decimals
+        // But we want to calculate fee shares directly.
+        
+        // Fee Assets = Total Yield * FeeBPS / BPS
+        // Fee Assets = (YieldPerShare * Supply * FeeBPS) / (BPS * 10**decimals)
+        
+        // However, minting fee shares dilutes the price.
+        // We want the post-mint price to be equal to the pre-mint price minus the fee?
+        // Or simply mint shares equivalent to the fee assets at the CURRENT price.
+        
+        // Standard formula:
+        // FeeAssets = (currentAssets - (highWaterMark * supply / 10**decimals)) * feeBps / BPS
+        // This is equivalent to: (YieldPerShare * Supply / 10**decimals) * feeBps / BPS
+        
+        uint256 totalYield = (yieldPerShare * supply) / (10 ** decimals());
+        uint256 feeAssets = (totalYield * performanceFeeBps) / BPS;
+        
         if (feeAssets == 0) {
-            feeCheckpoint = assets;
+            highWaterMark = currentPrice;
             return;
         }
 
+        // Calculate shares to mint
+        // We want to mint shares such that they are worth `feeAssets` at the *current* price (pre-dilution).
+        // Actually, standard practice is usually:
+        // feeShares = (feeAssets * supply) / (assets - feeAssets)
+        // This ensures the non-fee holders are diluted by exactly the fee amount.
+        
         uint256 feeShares = (feeAssets * supply) / (assets - feeAssets);
+        
         if (feeShares > 0) {
             _mint(feeRecipient, feeShares);
             emit PerformanceFeeMinted(feeAssets, feeShares);
         }
 
-        feeCheckpoint = assets;
-    }
-
-    function _refreshCheckpoint() internal {
-        feeCheckpoint = totalAssets();
+        // Update HWM to the current price.
+        // Note: After minting, the new price will be slightly lower than `currentPrice` because we extracted value.
+        // But effectively we have "realized" that gain. The new HWM should be the price *before* the fee cut?
+        // No, usually HWM is set to the price *after* the fee cut, or the price *before*?
+        // If we set it to `currentPrice` (pre-fee), then the price drops immediately after minting.
+        // So the next deposit comes in at a lower price.
+        // If the price goes back up to `currentPrice`, we shouldn't charge fee again?
+        // Correct. The "value" was extracted.
+        // So HWM should be set to `currentPrice`.
+        
+        highWaterMark = currentPrice;
     }
 }

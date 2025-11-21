@@ -15,6 +15,12 @@
 - 2025-11-21 09:55:36 UTC — Fixed Next.js type issues by switching contract reads/writes to wagmi `useReadContract`/`useWriteContract` with typed ABIs and env overrides; aligned contract typings (deployed/external), hardened transactor null check, and cleaned event history typing. Re-linted UI.
   Files touched: packages/nextjs/app/page.tsx, packages/nextjs/contracts/deployedContracts.ts, packages/nextjs/contracts/externalContracts.ts, packages/nextjs/hooks/scaffold-eth/useTransactor.tsx, packages/nextjs/hooks/scaffold-eth/useScaffoldEventHistory.ts, packages/nextjs/utils/scaffold-eth/contract.ts.
   Commands: `yarn next:check-types`, `yarn lint`.
+- 2025-11-21 11:07:19 UTC — Updated CodexVS comparison to acknowledge Gemini/Qwen PoC for the fee high-water-mark bug (`packages/foundry/test/FeeOnRecovery.t.sol`) and mark Gemini as most valuable audit; added follow-up recommendations accordingly.
+  Files touched: CodexVS.md, LOG.md.
+  Commands: none (documentation comparison).
+- 2025-11-21 11:10:14 UTC — Verified fee-on-recovery bug via `forge test -vvv --match-test testFeeChargedOnRecovery` (minted ~1% fee on 100→90→100 roundtrip) and elevated Codex_Audit Critical finding accordingly.
+  Files touched: Codex_Audit.md, LOG.md.
+  Commands: `forge test -vvv --match-test testFeeChargedOnRecovery`.
 - 2025-11-21 10:16:20 UTC — Authored internal audit report (`Codex_Audit.md`) covering contracts, frontend, risks, findings, and recommendations; identified env zero-address issue, missing pause/emergency controls, approval UX, gas read duplication, and config clarity. No code changes beyond documentation.
   Files touched: Codex_Audit.md, LOG.md.
   Commands: none (documentation only).
