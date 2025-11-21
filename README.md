@@ -25,7 +25,7 @@ yarn install
 ```
 
 Environment:
-- Copy `packages/nextjs/.env.example` to `.env.local` and fill values (RPC, WalletConnect project ID, contract addresses). Do not commit secrets.
+- Copy `packages/nextjs/.env.example` to `.env.local` and fill values (RPC, WalletConnect project ID, chain ID, EarnGrid vault + strategy + EulerEarn vault addresses). Do not commit secrets.
 - Copy `packages/foundry/.env.example` to `.env` and fill values (RPC URLs, `CHAIN_ID`, `DEPLOYER_PRIVATE_KEY`, EulerEarn vault addresses for USDC/USDT, block explorer keys).
 
 ## Development
@@ -34,6 +34,7 @@ Environment:
 - Frontend dev server: `yarn start` (Next.js at http://localhost:3000)
 - Contract tests: `yarn foundry:test` (or `forge test` inside `packages/foundry`)
 - Lint frontend/format: `yarn lint` / `yarn format`
+- Target network in the UI is controlled by `NEXT_PUBLIC_CHAIN_ID` (defaults to local Foundry if unset). Update env + addresses when pointing to mainnet/testnet deployments.
 
 ## Contract architecture
 - `EarnGridVault4626`: ERC-4626 vault with a capped 10% performance fee minted as shares to the fee recipient on positive yield only. Ownable admin controls performance fee, fee recipient, and pluggable strategy. Deposits/mints auto-push assets to the active strategy; withdraw/redeem pull back from the strategy as needed. Reentrancy guards wrap entrypoints.

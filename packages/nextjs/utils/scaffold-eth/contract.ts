@@ -61,7 +61,7 @@ const deepMergeContracts = <L extends Record<PropertyKey, any>, E extends Record
   return result as MergeDeepRecord<AddExternalFlag<L>, AddExternalFlag<E>, { arrayMergeMode: "replace" }>;
 };
 
-const contractsData = deepMergeContracts(deployedContractsData, externalContractsData);
+const contractsData = deepMergeContracts(deployedContractsData, externalContractsData) as GenericContractsDeclaration;
 
 export type InheritedFunctions = { readonly [key: string]: string };
 
@@ -91,7 +91,7 @@ type ContractsDeclaration = IsContractDeclarationMissing<GenericContractsDeclara
 
 type Contracts = ContractsDeclaration[ConfiguredChainId];
 
-export type ContractName = keyof Contracts;
+export type ContractName = keyof Contracts | string;
 
 export type Contract<TContractName extends ContractName> = Contracts[TContractName];
 
@@ -280,7 +280,7 @@ export type EventFilters<
     : {
         [Key in IsContractDeclarationMissing<
           any,
-          IndexedEventInputs<TContractName, TEventName>["name"]
+          NonNullable<IndexedEventInputs<TContractName, TEventName>["name"]>
         >]?: AbiParameterToPrimitiveType<Extract<IndexedEventInputs<TContractName, TEventName>, { name: Key }>>;
       }
 >;
