@@ -27,6 +27,9 @@
 - 2025-11-21 12:00:00 UTC — Added Pausable circuit-breaker to EarnGridVault4626 (pause/unpause on all user entrypoints) and a `testPausable` regression. Updated README/AGENTS to mention pause support.
   Files touched: packages/foundry/contracts/src/EarnGridVault4626.sol, packages/foundry/test/EarnGridVault.t.sol, README.md, AGENTS.md.
   Commands: `forge test`.
+- 2025-11-21 12:46:15 UTC — Prepared Base defaults in env templates (`CHAIN_ID=8453`, `BASE_RPC_URL=https://mainnet.base.org`) for deploy and frontend configs; clarified README deploy notes.
+  Files touched: packages/foundry/.env.example, packages/nextjs/.env.example, README.md, LOG.md.
+  Commands: none (docs/deployer config).
 - 2025-11-21 10:16:20 UTC — Authored internal audit report (`Codex_Audit.md`) covering contracts, frontend, risks, findings, and recommendations; identified env zero-address issue, missing pause/emergency controls, approval UX, gas read duplication, and config clarity. No code changes beyond documentation.
   Files touched: Codex_Audit.md, LOG.md.
   Commands: none (documentation only).

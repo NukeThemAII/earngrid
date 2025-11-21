@@ -46,12 +46,12 @@ Environment:
 - Frontend lint/tests: `yarn lint` / `yarn test` (when added).
 
 ## Deployment (Foundry)
-Env-driven deployment script targets any chain (e.g., Base id 8453):
+Env-driven deployment script targets any chain (Base mainnet defaults included):
 1. Set `.env` in `packages/foundry` with:
    - `ASSET` (e.g., Base USDC address)
    - `EULER_EARN_VAULT` (EulerEarn ERC-4626 target)
    - `FEE_RECIPIENT`, `PERFORMANCE_FEE_BPS` (<=1000), `VAULT_NAME`, `VAULT_SYMBOL`
-   - `BASE_RPC_URL` (or relevant RPC) and `DEPLOYER_PRIVATE_KEY`, `CHAIN_ID`
+   - `BASE_RPC_URL` (https://mainnet.base.org) and `DEPLOYER_PRIVATE_KEY`, `CHAIN_ID=8453`
 2. Deploy:
 ```bash
 cd packages/foundry
