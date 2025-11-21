@@ -35,6 +35,7 @@ We are **not** re-implementing EulerEarn. We build a thin, opinionated layer on 
        - `setStrategy(address)` (with sanity checks + optional timelock).
        - `setPerformanceFee(uint256)` (max 10%).
        - `setFeeRecipient(address)`.
+       - `pause()` / `unpause()` for emergency circuit-breaker.
 - **Performance fee pattern:**
   - Mirror EulerEarn’s general idea: performance fee is taken as **extra shares minted to the fee recipient** when `totalAssets` has grown.
   - Use a **share-price high-water mark**: compare current price-per-share vs the previous high; never lower the HWM on losses, and only mint fee shares on new highs to avoid charging on recoveries.

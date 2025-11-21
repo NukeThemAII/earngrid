@@ -37,7 +37,7 @@ Environment:
 - Target network in the UI is controlled by `NEXT_PUBLIC_CHAIN_ID` (defaults to local Foundry if unset). Update env + addresses when pointing to mainnet/testnet deployments.
 
 ## Contract architecture
-- `EarnGridVault4626`: ERC-4626 vault with a capped 10% performance fee minted as shares to the fee recipient on positive yield only. Uses a **share-price high-water mark** (HWM) so fees are never charged on loss recovery; fees mint only when price exceeds the prior HWM. Ownable admin controls performance fee, fee recipient, and pluggable strategy. Deposits/mints auto-push assets to the active strategy; withdraw/redeem pull back from the strategy as needed. Reentrancy guards wrap entrypoints.
+- `EarnGridVault4626`: ERC-4626 vault with a capped 10% performance fee minted as shares to the fee recipient on positive yield only. Uses a **share-price high-water mark** (HWM) so fees are never charged on loss recovery; fees mint only when price exceeds the prior HWM. Ownable admin controls performance fee, fee recipient, pluggable strategy, and an emergency `pause`/`unpause`. Deposits/mints auto-push assets to the active strategy; withdraw/redeem pull back from the strategy as needed. Reentrancy guards wrap entrypoints.
 - `StrategyERC4626`: abstract ERC-4626 strategy base with vault-only `invest/divest/harvest`, totalAssets passthrough to the target ERC-4626, and allowance resets for safer approvals.
 - `EulerEarnStrategy`: concrete implementation that approves and deposits into a configured EulerEarn ERC-4626 vault.
 

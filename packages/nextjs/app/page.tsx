@@ -207,24 +207,40 @@ const Home: NextPage = () => {
   };
 
   const handleDeposit = async () => {
-    if (!depositAmountParsed || !connectedAddress || !ensureNetwork() || !vaultAddress) return;
-    await writeVaultRaw({
-      address: vaultAddress as `0x${string}`,
-      abi: vaultAbiData,
-      functionName: "deposit",
-      args: [depositAmountParsed, connectedAddress],
-    });
+    if (!connectedAddress || !vaultAddress || !ensureNetwork()) return;
+    if (vaultAddress === "0x0000000000000000000000000000000000000000") {
+      notification.error("Vault address not configured");
+      return;
+    }
+    try {
+      await writeVaultRaw({
+        address: vaultAddress as `0x${string}`,
+        abi: vaultAbiData,
+        functionName: "deposit",
+        args: [depositAmountParsed, connectedAddress],
+      });
+    } catch (err) {
+      console.error(err);
+    }
     setDepositInput("");
   };
 
   const handleWithdraw = async () => {
-    if (!withdrawAmountParsed || !connectedAddress || !ensureNetwork() || !vaultAddress) return;
-    await writeVaultRaw({
-      address: vaultAddress as `0x${string}`,
-      abi: vaultAbiData,
-      functionName: "withdraw",
-      args: [withdrawAmountParsed, connectedAddress, connectedAddress],
-    });
+    if (!connectedAddress || !vaultAddress || !ensureNetwork()) return;
+    if (vaultAddress === "0x0000000000000000000000000000000000000000") {
+      notification.error("Vault address not configured");
+      return;
+    }
+    try {
+      await writeVaultRaw({
+        address: vaultAddress as `0x${string}`,
+        abi: vaultAbiData,
+        functionName: "withdraw",
+        args: [withdrawAmountParsed, connectedAddress, connectedAddress],
+      });
+    } catch (err) {
+      console.error(err);
+    }
     setWithdrawInput("");
   };
 

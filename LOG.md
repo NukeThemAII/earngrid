@@ -24,6 +24,9 @@
 - 2025-11-21 11:45:48 UTC — Added env-gated contract wiring (skip zero-address configs) and approval tightening (approve exact deposit amount). Added Foundry deploy script for env-driven Base/mainnet deployments (ASSET/EULER_EARN_VAULT/FEE_RECIPIENT/etc.), updated env examples, and documented deployment steps. Lint/type checks and forge tests green.
   Files touched: packages/nextjs/contracts/externalContracts.ts, packages/nextjs/app/page.tsx, packages/foundry/script/Deploy.s.sol, packages/foundry/.env.example, README.md, AGENTS.md, LOG.md.
   Commands: `yarn lint`, `yarn next:check-types`, `forge test`.
+- 2025-11-21 12:00:00 UTC — Added Pausable circuit-breaker to EarnGridVault4626 (pause/unpause on all user entrypoints) and a `testPausable` regression. Updated README/AGENTS to mention pause support.
+  Files touched: packages/foundry/contracts/src/EarnGridVault4626.sol, packages/foundry/test/EarnGridVault.t.sol, README.md, AGENTS.md.
+  Commands: `forge test`.
 - 2025-11-21 10:16:20 UTC — Authored internal audit report (`Codex_Audit.md`) covering contracts, frontend, risks, findings, and recommendations; identified env zero-address issue, missing pause/emergency controls, approval UX, gas read duplication, and config clarity. No code changes beyond documentation.
   Files touched: Codex_Audit.md, LOG.md.
   Commands: none (documentation only).

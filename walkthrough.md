@@ -1,21 +1,22 @@
-# Walkthrough - Fix High-Water Mark Bug
+# Walkthrough - Safety & UX Improvements
 
 ## Changes Made
 
 ### Smart Contracts
 - **[EarnGridVault4626.sol](file:///home/x/earngrid/packages/foundry/contracts/src/EarnGridVault4626.sol)**:
-    - Replaced `feeCheckpoint` (Total Assets) with `highWaterMark` (Share Price).
-    - Updated `_collectPerformanceFee` to calculate yield based on `currentPrice - highWaterMark`.
-    - This ensures fees are only charged when the share price exceeds the previous all-time high, preventing fees on recovery from losses.
+    - Inherited `Pausable` from OpenZeppelin.
+    - Added `pause()` and `unpause()` functions (onlyOwner).
+    - Added `whenNotPaused` modifier to `deposit`, `mint`, `withdraw`, `redeem`.
+    - This allows the owner to freeze the vault in case of emergency.
+
+### Frontend
+- **[page.tsx](file:///home/x/earngrid/packages/nextjs/app/page.tsx)**:
+    - **Zero Address Gating**: Added checks to disable interactions if `vaultAddress` or `assetAddress` are not configured (i.e., are zero address).
+    - **Exact Approval**: Updated `handleApprove` to approve exactly the deposit amount instead of a hardcoded 1 billion tokens.
 
 ### Tests
-- **[FeeOnRecovery.t.sol](file:///home/x/earngrid/packages/foundry/test/FeeOnRecovery.t.sol)**:
-    - Created a new test file to reproduce the bug and verify the fix.
-    - `testNoFeeOnRecovery`: Confirms that no fees are charged when assets drop and then recover to the original level.
-    - `testFeeOnNewHigh`: Confirms that fees *are* charged when the price exceeds the previous HWM.
 - **[EarnGridVault.t.sol](file:///home/x/earngrid/packages/foundry/test/EarnGridVault.t.sol)**:
-    - Updated legacy tests to use `highWaterMark` assertions instead of `feeCheckpoint`.
-    - Relaxed assertion precision slightly to account for rounding differences in the new logic.
+    - Added `testPausable` to verify that deposits revert when the vault is paused and succeed when unpaused.
 
 ## Verification Results
 
@@ -23,11 +24,11 @@
 Ran `forge test` to verify all contracts.
 
 ```bash
-Ran 2 test suites: 8 tests passed, 0 failed, 0 skipped (8 total tests)
+Ran 2 test suites: 9 tests passed, 0 failed, 0 skipped (9 total tests)
 ```
 
 - `FeeOnRecoveryTest`: **PASSED**
-- `EarnGridVaultTest`: **PASSED**
+- `EarnGridVaultTest`: **PASSED** (including `testPausable`)
 
 ## Conclusion
-The critical High-Water Mark bug has been successfully fixed. The vault now correctly tracks the share price for performance fees, ensuring users are not penalized for volatility.
+The dApp now has essential safety features (Pausable) and improved UX (Zero Address handling, Exact Approval). It is ready for further testing or deployment.

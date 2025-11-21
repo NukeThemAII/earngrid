@@ -218,4 +218,30 @@ contract EarnGridVaultTest is Test {
         vm.prank(alice);
         vault.mint(0, alice);
     }
+
+    function testPausable() public {
+        // 1. Pause
+        vm.prank(vault.owner());
+        vault.pause();
+
+        // 2. Try deposit (should fail)
+        uint256 depositAmount = 100e6;
+        _approve(alice, depositAmount);
+        vm.prank(alice);
+        vm.expectRevert(abi.encodeWithSignature("EnforcedPause()"));
+        vault.deposit(depositAmount, alice);
+
+        // 3. Unpause
+        vm.prank(vault.owner());
+        vault.unpause();
+
+        // 4. Try deposit (should succeed)
+        vm.prank(alice);
+        vault.deposit(depositAmount, alice);
+        assertEq(
+            vault.balanceOf(alice),
+            depositAmount,
+            "Deposit should succeed after unpause"
+        );
+    }
 }
