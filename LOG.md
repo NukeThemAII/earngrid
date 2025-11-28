@@ -24,13 +24,15 @@
 - **Tests**: Ran `pnpm test` in `offchain/rebalancer` (optimizer unit tests) — all passing.
 - **Docs**: README clarifies rebalancer live strategy reads, periphery withdraw approvals, and reminds to set real ERC-4626 strategy addresses in `offchain/rebalancer/src/config.ts`.
 
-### Live Data Integration
+## 2025-11-28 Rebalancer Fixes & Optimization
+- **Fix**: Restored missing `deriveObservations` function in `onchain.ts` to prevent runtime errors in `index.ts`.
+- **Improvement**: Optimized `fetchObservations` in `onchain.ts` to use `multicall` for fetching strategy assets, totalAssets, and decimals, reducing RPC calls significantly.
+- **Fix**: Added missing `.js` extensions and type casts in `executor.ts` to satisfy `tsc` and module resolution.
+- **Verification**: Verified optimizer logic with `pnpm test` and type safety with `tsc`.
+
+## 2025-11-29 Rebalancer Cleanup
 - **Off-chain Rebalancer**:
-    - **Feature**: Updated `index.ts` to use `fetchObservations` for live strategy TVL.
-    - **Fix**: Updated `onchain.ts` to use `BigInt` for `sharePrice` calculation to prevent precision loss.
-    - **Fix**: Updated `optimizer.ts` to enforce caps during allocation (previously only detected breaches).
-    - **Test**: Verified optimizer fixes with `pnpm test`.
-- **Frontend**:
-    - **Feature**: Implemented `useStrategies` hook to fetch live strategy data (TVL, Caps) from the vault and strategy contracts.
-    - **Feature**: Calculated live "Blended APY" based on current strategy allocations and TVL.
-    - **Feature**: Updated `page.tsx` and `StrategyTable` to display live data instead of hardcoded values.
+  - Kept `index.ts` consuming `fetchObservations` with fallback to `deriveObservations`.
+  - Ensured share price remains 18-decimal fixed point via BigInt in `onchain.ts`.
+  - Minor cleanups to imports and type casts; unit tests (`pnpm test` in `offchain/rebalancer`) passing.
+- **Note**: Frontend live strategy hooks are not yet implemented; StrategyTable still uses placeholder data.

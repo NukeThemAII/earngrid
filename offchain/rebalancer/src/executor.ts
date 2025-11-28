@@ -1,6 +1,6 @@
 import { Hex, encodeFunctionData } from "viem";
-import { earngridVaultAbi } from "./abi/earngridVault";
-import { AllocationPlan } from "./optimizer";
+import { earngridVaultAbi } from "./abi/earngridVault.js";
+import { AllocationPlan } from "./optimizer.js";
 
 export type RebalanceCall = {
   to: Hex;
@@ -18,7 +18,7 @@ export function buildReallocateCalldata(vault: Hex, totalAssets: bigint, plans: 
   const assets = plans.map((plan) => {
     const bps = weightToBps(plan.targetWeight);
     const allocated = (totalAssets * bps) / 1_000_000n;
-    return { id: plan.address, assets: allocated };
+    return { id: plan.address as Hex, assets: allocated };
   });
 
   const data = encodeFunctionData({
