@@ -18,6 +18,7 @@ Repository: https://github.com/NukeThemAII/MetaYield
 - viem SDK for reads + tx data encoding.
 - Indexer/API for TVL, APY (7d/30d), and allocations.
 - Next.js UI scaffold with dashboard/vault/strategies/admin pages and wagmi integration.
+- Onchain live reads in UI for vault state + user position.
 
 ## Quickstart
 ```bash
@@ -70,6 +71,7 @@ PORT=3001
 - `GET /api/apy` → realized 7d/30d APY
 - `GET /api/tvl` → latest TVL + share price
 - `GET /api/allocations` → latest per‑strategy snapshot
+- `GET /api/price-history?limit=48` → recent assetsPerShare series
 
 ## Docs
 Read these first:

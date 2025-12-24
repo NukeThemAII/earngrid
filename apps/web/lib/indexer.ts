@@ -31,6 +31,13 @@ export type AllocationResponse = {
   }[];
 };
 
+export type PriceHistoryResponse = {
+  snapshots: {
+    timestamp: number;
+    assetsPerShare: string;
+  }[];
+};
+
 function baseUrl(): string {
   return process.env.NEXT_PUBLIC_INDEXER_URL ?? "http://localhost:3001";
 }
@@ -45,6 +52,10 @@ export async function fetchApy(): Promise<ApyResponse | null> {
 
 export async function fetchAllocations(): Promise<AllocationResponse | null> {
   return fetchJson<AllocationResponse>("/api/allocations");
+}
+
+export async function fetchPriceHistory(limit = 48): Promise<PriceHistoryResponse | null> {
+  return fetchJson<PriceHistoryResponse>(`/api/price-history?limit=${limit}`);
 }
 
 async function fetchJson<T>(path: string): Promise<T | null> {

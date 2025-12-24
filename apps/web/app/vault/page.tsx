@@ -1,4 +1,5 @@
 import { DepositWithdrawPanel } from "@/components/deposit-withdraw-panel";
+import { OnchainMetrics } from "@/components/onchain-metrics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchApy, fetchTvl } from "@/lib/indexer";
 import { formatNumber, formatPercent, formatUsd } from "@/lib/format";
@@ -51,7 +52,10 @@ export default async function VaultPage() {
           </CardContent>
         </Card>
       </div>
-      <DepositWithdrawPanel />
+      <div className="space-y-6">
+        <DepositWithdrawPanel />
+        <OnchainMetrics />
+      </div>
     </div>
   );
 }

@@ -50,10 +50,15 @@
 - Implemented pages: `/` dashboard, `/vault`, `/strategies`, `/admin`.
 - Wired indexer API reads for TVL/APY/allocations on server-rendered pages.
 - Built basic deposit/withdraw panel with approve/deposit/withdraw txs.
+- Added onchain read panels for live vault state + user position.
+- Added price history endpoint and sparkline fed by indexer snapshots.
 
 ### DevOps
 - Added GitHub Actions CI for Foundry tests and TS lint/typechecks.
 - Expanded `docs/RUNBOOK.md` with deployment and ops guidance.
+
+### Strategy Universe
+- Populated `docs/STRATEGY_UNIVERSE.md` with Base USDC MetaMorpho vault addresses and initial caps/tiers proposal.
 
 ## Key design choices
 - v0.1 uses synchronous ERC-4626 strategies only.

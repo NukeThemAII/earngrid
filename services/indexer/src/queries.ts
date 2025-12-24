@@ -106,6 +106,20 @@ export async function getLatestAllocations(
   };
 }
 
+export async function getRecentSnapshots(
+  db: Kysely<DB>,
+  limit: number
+): Promise<SnapshotRow[]> {
+  const rows = await db
+    .selectFrom("snapshots")
+    .selectAll()
+    .orderBy("timestamp", "desc")
+    .limit(limit)
+    .execute();
+
+  return rows.reverse();
+}
+
 export async function recordStartBlock(db: Kysely<DB>, startBlock: number): Promise<void> {
   await setState(db, "startBlock", String(startBlock));
 }

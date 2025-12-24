@@ -4,7 +4,12 @@ import { createPublicClient, http } from "viem";
 import { loadConfig } from "./config.js";
 import { createDatabase, initializeSchema } from "./db.js";
 import { VaultIndexer } from "./indexer.js";
-import { getLatestAllocations, getLatestSnapshot, getSnapshotAtOrBefore } from "./queries.js";
+import {
+  getLatestAllocations,
+  getLatestSnapshot,
+  getRecentSnapshots,
+  getSnapshotAtOrBefore,
+} from "./queries.js";
 
 const config = loadConfig();
 
@@ -93,6 +98,18 @@ app.get("/api/apy", async (_req, res) => {
       sevenDay: snapshot7d?.timestamp ?? null,
       thirtyDay: snapshot30d?.timestamp ?? null,
     },
+  });
+});
+
+app.get("/api/price-history", async (req, res) => {
+  const limit = Math.min(Math.max(Number(req.query.limit ?? 48), 2), 720);
+  const snapshots = await getRecentSnapshots(db, limit);
+
+  res.json({
+    snapshots: snapshots.map((snapshot) => ({
+      timestamp: snapshot.timestamp,
+      assetsPerShare: snapshot.assets_per_share,
+    })),
   });
 });
 

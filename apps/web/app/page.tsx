@@ -1,11 +1,21 @@
 import { AllocationsTable } from "@/components/allocations-table";
 import { MetricCard } from "@/components/metric-card";
+import { OnchainMetrics } from "@/components/onchain-metrics";
 import { Sparkline } from "@/components/sparkline";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { fetchAllocations, fetchApy, fetchTvl } from "@/lib/indexer";
+import { fetchAllocations, fetchApy, fetchPriceHistory, fetchTvl } from "@/lib/indexer";
 import { formatNumber, formatPercent, formatUsd } from "@/lib/format";
 
-function buildSparkline(value: string | undefined): number[] {
+function buildSparkline(value: string | undefined, history?: string[]): number[] {
+  if (history && history.length > 1) {
+    const points = history
+      .map((entry) => Number(entry) / 1e18)
+      .filter((entry) => Number.isFinite(entry));
+    if (points.length > 1) {
+      return points;
+    }
+  }
+
   if (!value) {
     return [1, 1.01, 1.015, 1.02, 1.03, 1.035, 1.04];
   }
@@ -17,10 +27,11 @@ function buildSparkline(value: string | undefined): number[] {
 }
 
 export default async function DashboardPage() {
-  const [apy, tvl, allocations] = await Promise.all([
+  const [apy, tvl, allocations, history] = await Promise.all([
     fetchApy(),
     fetchTvl(),
     fetchAllocations(),
+    fetchPriceHistory(48),
   ]);
 
   const sharePrice = tvl ? formatNumber(tvl.assetsPerShare, 18, 6) : "--";
@@ -28,6 +39,7 @@ export default async function DashboardPage() {
   const apy7d = formatPercent(apy?.apy7d ?? null);
   const apy30d = formatPercent(apy?.apy30d ?? null);
   const totalStrategies = allocations?.allocations.length ?? 0;
+  const historyPoints = history?.snapshots.map((snapshot) => snapshot.assetsPerShare);
 
   return (
     <div className="space-y-10">
@@ -57,33 +69,36 @@ export default async function DashboardPage() {
 
       <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <AllocationsTable allocations={allocations?.allocations ?? []} />
-        <Card className="animate-rise">
-          <CardHeader>
-            <CardTitle className="text-sm text-muted">Share price trend</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Sparkline points={buildSparkline(tvl?.assetsPerShare)} />
-            <div className="flex items-center justify-between text-xs text-muted">
-              <span className="number">{sharePrice} USDC</span>
-              <span>{totalStrategies} active strategies</span>
-            </div>
-            <div className="section-divider" />
-            <div className="space-y-2 text-xs text-muted">
-              <div className="flex items-center justify-between">
-                <span>Deposit queue</span>
-                <span>Allocator controlled</span>
+        <div className="space-y-6">
+          <OnchainMetrics />
+          <Card className="animate-rise">
+            <CardHeader>
+              <CardTitle className="text-sm text-muted">Share price trend</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Sparkline points={buildSparkline(tvl?.assetsPerShare, historyPoints)} />
+              <div className="flex items-center justify-between text-xs text-muted">
+                <span className="number">{sharePrice} USDC</span>
+                <span>{totalStrategies} active strategies</span>
               </div>
-              <div className="flex items-center justify-between">
-                <span>Withdraw queue</span>
-                <span>Liquidity-first</span>
+              <div className="section-divider" />
+              <div className="space-y-2 text-xs text-muted">
+                <div className="flex items-center justify-between">
+                  <span>Deposit queue</span>
+                  <span>Allocator controlled</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Withdraw queue</span>
+                  <span>Liquidity-first</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Performance fee</span>
+                  <span>3% HWM</span>
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <span>Performance fee</span>
-                <span>3% HWM</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </section>
     </div>
   );
