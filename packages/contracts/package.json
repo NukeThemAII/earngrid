@@ -1,0 +1,11 @@
+{
+  "name": "@blended-vault/contracts",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "build": "forge build",
+    "test": "forge test",
+    "fmt": "forge fmt",
+    "lint": "forge fmt --check"
+  }
+}
