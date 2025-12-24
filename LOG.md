@@ -42,7 +42,14 @@
 - Updated `infra/docker-compose.yml` with Postgres service for local dev.
 
 ### README
-- Rewritten root `README.md` with project overview, quickstart, API, and envs.
+- Rewritten root `README.md` with MetaYield branding, current state, and updated quickstart/envs.
+
+### Frontend (Next.js)
+- Scaffolded `apps/web` with Next.js App Router + Tailwind + shadcn-style UI primitives.
+- Added wagmi/viem providers and wallet connect button.
+- Implemented pages: `/` dashboard, `/vault`, `/strategies`, `/admin`.
+- Wired indexer API reads for TVL/APY/allocations on server-rendered pages.
+- Built basic deposit/withdraw panel with approve/deposit/withdraw txs.
 
 ## Key design choices
 - v0.1 uses synchronous ERC-4626 strategies only.

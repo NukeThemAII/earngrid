@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --bg: #070b11;
+  --surface: #0d121b;
+  --surface-elevated: #121926;
+  --border: #1a2432;
+  --text: #e6edf5;
+  --muted: #9fb0c4;
+  --accent: #5eead4;
+  --accent-strong: #2dd4bf;
+  --accent-soft: rgba(94, 234, 212, 0.14);
+  --chart-1: #14b8a6;
+  --chart-2: #38bdf8;
+  --chart-3: #64748b;
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: radial-gradient(1100px circle at 10% -10%, rgba(56, 189, 248, 0.18), transparent 45%),
+    radial-gradient(900px circle at 80% -20%, rgba(20, 184, 166, 0.16), transparent 40%),
+    #070b11;
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.bg-grid {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.surface-glow {
+  background: linear-gradient(135deg, rgba(94, 234, 212, 0.06), transparent 60%);
+}
+
+.number {
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.3), transparent);
+}

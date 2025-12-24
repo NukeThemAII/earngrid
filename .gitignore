@@ -5,6 +5,7 @@ node_modules/
 **/node_modules/
 **/out/
 **/cache/
+**/.next/
 **/dist/
 **/*.tsbuildinfo
 *.db
