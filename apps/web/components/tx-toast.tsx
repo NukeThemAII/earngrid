@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { usePublicClient } from "wagmi";
 
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ const TxToastContext = React.createContext<TxToastContextValue | null>(null);
 export function TxToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = React.useState<TxToast[]>([]);
   const publicClient = usePublicClient({ chainId });
+  const queryClient = useQueryClient();
 
   const trackTx = React.useCallback(
     async (action: () => Promise<`0x${string}`>, options: TrackTxOptions) => {
@@ -60,6 +62,7 @@ export function TxToastProvider({ children }: { children: React.ReactNode }) {
               : toast
           )
         );
+        queryClient.invalidateQueries();
       } catch (error) {
         const message = error instanceof Error ? error.message : "Transaction failed.";
         setToasts((current) =>
@@ -69,7 +72,7 @@ export function TxToastProvider({ children }: { children: React.ReactNode }) {
         );
       }
     },
-    [publicClient]
+    [publicClient, queryClient]
   );
 
   const dismiss = React.useCallback((id: string) => {

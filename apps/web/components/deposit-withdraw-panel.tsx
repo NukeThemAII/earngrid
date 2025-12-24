@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { erc20Abi, formatUnits, parseUnits } from "viem";
-import { useAccount, useReadContract, useWriteContract } from "wagmi";
+import { useAccount, usePublicClient, useReadContract, useWriteContract } from "wagmi";
 
 import { blendedVaultAbi } from "@blended-vault/sdk";
 import { Button } from "@/components/ui/button";
@@ -16,10 +16,14 @@ import { chain, chainId, usdcAddress, usdcDecimals, vaultAddress } from "@/lib/c
 export function DepositWithdrawPanel() {
   const { address, isConnected, chain: activeChain } = useAccount();
   const [amount, setAmount] = React.useState("");
+  const [slippage, setSlippage] = React.useState("0.5");
+  const [localNotice, setLocalNotice] = React.useState<string | null>(null);
   const { writeContractAsync, isPending } = useWriteContract();
   const { trackTx } = useTxToast();
+  const publicClient = usePublicClient({ chainId });
 
   const parsedAmount = safeParseUnits(amount, usdcDecimals);
+  const slippageBps = parseSlippageBps(slippage);
   const safeVaultAddress = (vaultAddress || "0x0000000000000000000000000000000000000000") as `0x${string}`;
   const safeUsdcAddress = (usdcAddress || "0x0000000000000000000000000000000000000000") as `0x${string}`;
   const hasConfig = Boolean(address && usdcAddress && vaultAddress);
@@ -88,6 +92,7 @@ export function DepositWithdrawPanel() {
     if (!address || !usdcAddress || !vaultAddress || parsedAmount === 0n) {
       return;
     }
+    setLocalNotice(null);
     await trackTx(
       () =>
         writeContractAsync({
@@ -104,6 +109,10 @@ export function DepositWithdrawPanel() {
     if (!address || !vaultAddress || parsedAmount === 0n) {
       return;
     }
+    if (!(await checkSlippage("deposit"))) {
+      return;
+    }
+    setLocalNotice(null);
     await trackTx(
       () =>
         writeContractAsync({
@@ -120,6 +129,10 @@ export function DepositWithdrawPanel() {
     if (!address || !vaultAddress || parsedAmount === 0n) {
       return;
     }
+    if (!(await checkSlippage("withdraw"))) {
+      return;
+    }
+    setLocalNotice(null);
     await trackTx(
       () =>
         writeContractAsync({
@@ -130,6 +143,49 @@ export function DepositWithdrawPanel() {
         }),
       { title: "Withdraw USDC" }
     );
+  }
+
+  async function checkSlippage(mode: "deposit" | "withdraw"): Promise<boolean> {
+    if (!vaultAddress || parsedAmount === 0n) {
+      return true;
+    }
+    if (!publicClient) {
+      return true;
+    }
+    if (slippageBps === null) {
+      setLocalNotice("Invalid slippage tolerance. Use a positive number under 100%.");
+      return false;
+    }
+    const baseline = mode === "deposit" ? previewDeposit : previewWithdraw;
+    if (baseline === undefined || baseline === 0n) {
+      return true;
+    }
+    try {
+      const latest = (await publicClient.readContract({
+        abi: blendedVaultAbi,
+        address: vaultAddress,
+        functionName: mode === "deposit" ? "previewDeposit" : "previewWithdraw",
+        args: [parsedAmount],
+      })) as bigint;
+      if (mode === "deposit") {
+        const minShares = (baseline * (10_000n - slippageBps)) / 10_000n;
+        if (latest < minShares) {
+          setLocalNotice("Slippage check failed. Share output moved below tolerance.");
+          return false;
+        }
+      } else {
+        const maxShares = (baseline * (10_000n + slippageBps)) / 10_000n;
+        if (latest > maxShares) {
+          setLocalNotice("Slippage check failed. Shares required moved above tolerance.");
+          return false;
+        }
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to fetch latest preview.";
+      setLocalNotice(message);
+      return false;
+    }
+    return true;
   }
 
   return (
@@ -159,7 +215,10 @@ export function DepositWithdrawPanel() {
             <Input
               placeholder="0.00"
               value={amount}
-              onChange={(event) => setAmount(event.target.value)}
+              onChange={(event) => {
+                setAmount(event.target.value);
+                setLocalNotice(null);
+              }}
               inputMode="decimal"
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -185,6 +244,29 @@ export function DepositWithdrawPanel() {
             </span>
           </div>
         </div>
+        <div className="space-y-2 text-xs text-muted">
+          <div className="flex items-center justify-between gap-3">
+            <span>Slippage tolerance</span>
+            <div className="flex items-center gap-2">
+              <Input
+                className="w-20 text-right"
+                value={slippage}
+                onChange={(event) => setSlippage(event.target.value)}
+                inputMode="decimal"
+                placeholder="0.5"
+              />
+              <span>%</span>
+            </div>
+          </div>
+          <p className="text-[11px] text-muted">
+            Client-side check only. Onchain slippage guards are not available in v0.1.
+          </p>
+        </div>
+        {localNotice ? (
+          <div className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
+            {localNotice}
+          </div>
+        ) : null}
         <div className="grid gap-3 sm:grid-cols-3">
           <Button
             variant="outline"
@@ -266,4 +348,16 @@ function formatInputUnits(value: bigint, decimals: number): string {
     return formatted;
   }
   return formatted.replace(/\.?0+$/, "");
+}
+
+function parseSlippageBps(value: string): bigint | null {
+  if (!value) {
+    return 0n;
+  }
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric < 0 || numeric >= 100) {
+    return null;
+  }
+  const bps = Math.round(numeric * 100);
+  return BigInt(bps);
 }

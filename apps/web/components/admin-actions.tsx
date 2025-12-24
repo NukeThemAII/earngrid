@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { keccak256, toBytes } from "viem";
+import { isAddress, keccak256, toBytes } from "viem";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 
 import { blendedVaultAbi } from "@blended-vault/sdk";
@@ -30,9 +30,11 @@ export function AdminActions() {
   const { address, isConnected, chain: activeChain } = useAccount();
   const { writeContractAsync, isPending } = useWriteContract();
   const { trackTx } = useTxToast();
-  const [queueInput, setQueueInput] = React.useState("");
+  const [depositQueueInput, setDepositQueueInput] = React.useState("");
+  const [withdrawQueueInput, setWithdrawQueueInput] = React.useState("");
   const [capInput, setCapInput] = React.useState("");
-  const [salt, setSalt] = React.useState("queue");
+  const [salt, setSalt] = React.useState(() => createSalt());
+  const [notice, setNotice] = React.useState<string | null>(null);
   const safeVaultAddress = (vaultAddress ||
     "0x0000000000000000000000000000000000000000") as `0x${string}`;
 
@@ -129,19 +131,19 @@ export function AdminActions() {
     );
   }
 
-  async function updateQueues() {
+  async function updateDepositQueue() {
     if (!vaultAddress) {
       return;
     }
-    const entries = queueInput
-      .split("\n")
-      .map((value) => value.trim())
-      .filter(Boolean) as `0x${string}`[];
-
-    if (entries.length === 0) {
+    const { entries, error } = parseQueueInput(depositQueueInput);
+    if (error) {
+      setNotice(error);
       return;
     }
-
+    if (entries.length === 0) {
+      setNotice("Deposit queue is empty.");
+      return;
+    }
     await trackTx(
       () =>
         writeContractAsync({
@@ -152,6 +154,21 @@ export function AdminActions() {
         }),
       { title: "Update deposit queue" }
     );
+  }
+
+  async function updateWithdrawQueue() {
+    if (!vaultAddress) {
+      return;
+    }
+    const { entries, error } = parseQueueInput(withdrawQueueInput);
+    if (error) {
+      setNotice(error);
+      return;
+    }
+    if (entries.length === 0) {
+      setNotice("Withdraw queue is empty.");
+      return;
+    }
     await trackTx(
       () =>
         writeContractAsync({
@@ -168,8 +185,21 @@ export function AdminActions() {
     if (!vaultAddress) {
       return;
     }
+    setNotice(null);
     const [strategy, cap] = capInput.split(",").map((value) => value.trim());
     if (!strategy || !cap) {
+      setNotice('Format: "strategy,cap" where cap is in USDC decimals.');
+      return;
+    }
+    if (!isAddress(strategy)) {
+      setNotice("Invalid strategy address.");
+      return;
+    }
+    let capValue: bigint;
+    try {
+      capValue = BigInt(cap);
+    } catch {
+      setNotice("Cap must be a valid integer in USDC decimals.");
       return;
     }
     await trackTx(
@@ -178,10 +208,11 @@ export function AdminActions() {
           abi: blendedVaultAbi,
           address: vaultAddress,
           functionName: "scheduleCapIncrease",
-          args: [strategy as `0x${string}`, BigInt(cap), keccak256(toBytes(salt))],
+          args: [strategy as `0x${string}`, capValue, keccak256(toBytes(salt))],
         }),
       { title: "Schedule cap increase" }
     );
+    setSalt(createSalt());
   }
 
   return (
@@ -200,6 +231,11 @@ export function AdminActions() {
         {!isConnected ? (
           <div className="rounded-lg border border-border/70 bg-surfaceElevated/60 px-3 py-2 text-xs text-muted">
             Connect a wallet with the required role to enable admin actions.
+          </div>
+        ) : null}
+        {notice ? (
+          <div className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
+            {notice}
           </div>
         ) : null}
         <div className="grid gap-3 sm:grid-cols-3">
@@ -226,18 +262,33 @@ export function AdminActions() {
           </Button>
         </div>
         <div className="space-y-2">
-          <p className="text-xs text-muted">Queue update (one strategy per line).</p>
+          <p className="text-xs text-muted">Deposit queue (one strategy per line).</p>
           <Input
-            value={queueInput}
-            onChange={(event) => setQueueInput(event.target.value)}
+            value={depositQueueInput}
+            onChange={(event) => setDepositQueueInput(event.target.value)}
             placeholder="0xStrategyA\n0xStrategyB"
           />
           <Button
             variant="outline"
             disabled={!isAllocator || isPending || !canWrite}
-            onClick={updateQueues}
+            onClick={updateDepositQueue}
           >
-            Update Queues
+            Update Deposit Queue
+          </Button>
+        </div>
+        <div className="space-y-2">
+          <p className="text-xs text-muted">Withdraw queue (one strategy per line).</p>
+          <Input
+            value={withdrawQueueInput}
+            onChange={(event) => setWithdrawQueueInput(event.target.value)}
+            placeholder="0xStrategyA\n0xStrategyB"
+          />
+          <Button
+            variant="outline"
+            disabled={!isAllocator || isPending || !canWrite}
+            onClick={updateWithdrawQueue}
+          >
+            Update Withdraw Queue
           </Button>
         </div>
         <div className="space-y-2">
@@ -259,4 +310,29 @@ export function AdminActions() {
       </CardContent>
     </Card>
   );
+}
+
+function parseQueueInput(value: string): { entries: `0x${string}`[]; error?: string } {
+  const entries = value
+    .split("\n")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+
+  if (!entries.length) {
+    return { entries: [] };
+  }
+
+  const invalid = entries.find((entry) => !isAddress(entry));
+  if (invalid) {
+    return { entries: [], error: `Invalid address: ${invalid}` };
+  }
+
+  return { entries: entries as `0x${string}`[] };
+}
+
+function createSalt(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `salt-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }

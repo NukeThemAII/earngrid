@@ -61,6 +61,7 @@
 - Added tx toast system for pending/success/error states with explorer links.
 - Added onchain allocation summary donut with live queue ordering on the dashboard.
 - Added wrong-network gating + tx toasts for admin actions.
+- Added client-side slippage check and separate deposit/withdraw queue controls in the admin panel.
 
 ### DevOps
 - Added GitHub Actions CI for Foundry tests and TS lint/typechecks.
