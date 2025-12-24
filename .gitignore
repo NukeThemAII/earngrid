@@ -7,4 +7,6 @@ node_modules/
 **/cache/
 **/dist/
 **/*.tsbuildinfo
+*.db
+*.db-journal
 coverage/
