@@ -51,6 +51,10 @@
 - Wired indexer API reads for TVL/APY/allocations on server-rendered pages.
 - Built basic deposit/withdraw panel with approve/deposit/withdraw txs.
 
+### DevOps
+- Added GitHub Actions CI for Foundry tests and TS lint/typechecks.
+- Expanded `docs/RUNBOOK.md` with deployment and ops guidance.
+
 ## Key design choices
 - v0.1 uses synchronous ERC-4626 strategies only.
 - Strict withdrawals: revert on insufficient liquidity (no partial withdrawals).
