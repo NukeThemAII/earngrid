@@ -211,7 +211,7 @@ ERC-4626 vault with allowlisted strategies:
 |---------|-------------|
 | **Caps** | Maximum allocation per strategy |
 | **Tiers** | Risk classification (0=safest, 2=riskiest) |
-| **Tier Limits** | Max exposure per risk tier (e.g., Tier 2 max 20%) |
+| **Tier Limits** | Max exposure per risk tier (configured at deploy; see docs for examples) |
 | **Queues** | Priority ordering for deposits/withdrawals |
 | **Timelock** | ≥24h delay for risk-increasing changes |
 | **Harvest Guard** | Optional max daily share-price increase cap (anti-manipulation) |
@@ -222,13 +222,15 @@ ERC-4626 vault with allowlisted strategies:
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
 │   👑 Owner  │     │  🎨 Curator │     │  🤖 Allocator│    │  🛡️ Guardian │
 ├─────────────┤     ├─────────────┤     ├─────────────┤     ├─────────────┤
-│ • Set fees  │     │ • Add/remove│     │ • Set queues│     │ • Pause     │
+│ • Fee recip │     │ • Add/remove│     │ • Set queues│     │ • Pause     │
 │ • Grant     │     │   strategies│     │ • Rebalance │     │ • Emergency │
 │   roles     │     │ • Set caps  │     │ • Harvest   │     │   remove    │
 │ • Full      │     │ • Set tiers │     │             │     │             │
 │   admin     │     │             │     │             │     │             │
 └─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
 ```
+
+Note: fee bps is fixed at 3% in v0.1. The owner can set `feeRecipient` and `timelockDelay` (>=24h).
 
 ### Performance Fee
 
@@ -248,6 +250,8 @@ ERC-4626 vault with allowlisted strategies:
 └────────────────────────────────────────────────────────────────┘
 ```
 
+Fee rate is fixed at 3% in v0.1; only the fee recipient is configurable.
+
 ---
 
 ## 📡 Indexer API
@@ -260,7 +264,7 @@ ERC-4626 vault with allowlisted strategies:
 | `GET /api/allocations` | Per-strategy breakdown |
 | `GET /api/price-history?limit=48` | Historical share prices |
 
-Rate limited: 120 requests per 60 seconds per IP.
+Rate limited via `RATE_LIMIT_WINDOW_SEC` and `RATE_LIMIT_MAX` (defaults 120 requests per 60 seconds per IP).
 
 ---
 
