@@ -1,7 +1,7 @@
-# Runbook - MetaYield v0.1
+# Runbook - EarnGrid v0.1
 
 ## Purpose
-Operational guide for the USDC Blended Vault (MetaYield) covering deployment, configuration, and incident response.
+Operational guide for the USDC Blended Vault (EarnGrid) covering deployment, configuration, and incident response.
 
 ## Environments
 - Base Sepolia (staging)

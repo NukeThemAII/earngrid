@@ -45,7 +45,7 @@
 - Updated `infra/docker-compose.yml` with Postgres service for local dev.
 
 ### README
-- Rewritten root `README.md` with MetaYield branding, current state, and updated quickstart/envs.
+- Rewritten root `README.md` with EarnGrid branding, current state, and updated quickstart/envs.
 
 ### Frontend (Next.js)
 - Scaffolded `apps/web` with Next.js App Router + Tailwind + shadcn-style UI primitives.

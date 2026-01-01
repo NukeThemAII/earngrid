@@ -24,7 +24,7 @@ export function SiteHeader() {
     <header className="bg-grid border-b border-border/60">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
         <div className="space-y-1">
-          <p className="text-xs uppercase tracking-[0.2em] text-muted">MetaYield</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-muted">EarnGrid</p>
           <div className="flex items-center gap-3">
             <h1 className="text-lg font-semibold">USDC Blended Vault</h1>
             <Badge variant="accent">Base</Badge>

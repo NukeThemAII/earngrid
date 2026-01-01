@@ -1,4 +1,4 @@
-# TODO (MetaYield v0.1)
+# TODO (EarnGrid v0.1)
 
 ## Protocol
 - Confirm and validate Base Sepolia USDC address for deployment scripts.

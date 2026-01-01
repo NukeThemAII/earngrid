@@ -14,7 +14,7 @@ export default async function StrategiesPage() {
         </CardHeader>
         <CardContent className="space-y-4 text-sm text-muted">
           <p>
-            MetaYield only integrates synchronous ERC-4626 vaults for v0.1. Each strategy is
+            EarnGrid only integrates synchronous ERC-4626 vaults for v0.1. Each strategy is
             allowlisted, capped, and assigned a risk tier.
           </p>
           <div className="grid gap-3 text-xs md:grid-cols-3">

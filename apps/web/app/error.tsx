@@ -17,7 +17,7 @@ export default function ErrorPage({
 
   return (
     <div className="mx-auto flex min-h-[60vh] w-full max-w-2xl flex-col justify-center gap-4 text-center">
-      <p className="text-xs uppercase tracking-[0.3em] text-muted">MetaYield</p>
+      <p className="text-xs uppercase tracking-[0.3em] text-muted">EarnGrid</p>
       <h2 className="text-2xl font-semibold text-balance">Something went wrong.</h2>
       <p className="text-sm text-muted">
         The app hit an unexpected error. Try again or refresh the page.

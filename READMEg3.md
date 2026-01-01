@@ -1,27 +1,27 @@
 ```text
-███╗   ███╗███████╗████████╗ █████╗ ██╗   ██╗██╗███████╗██╗     ██████╗ 
-████╗ ████║██╔════╝╚══██╔══╝██╔══██╗╚██╗ ██╔╝██║██╔════╝██║     ██╔══██╗
-██╔████╔██║█████╗     ██║   ███████║ ╚████╔╝ ██║█████╗  ██║     ██║  ██║
-██║╚██╔╝██║██╔══╝     ██║   ██╔══██║  ╚██╔╝  ██║██╔══╝  ██║     ██║  ██║
-██║ ╚═╝ ██║███████╗   ██║   ██║  ██║   ██║   ██║███████╗███████╗██████╔╝
-╚═╝     ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝   ╚═╝   ╚═╝╚══════╝╚══════╝╚═════╝ 
+███████╗ █████╗ ██████╗ ███╗   ██╗ ██████╗ ██████╗ ██╗██████╗ 
+██╔════╝██╔══██╗██╔══██╗████╗  ██║██╔════╝ ██╔══██╗██║██╔══██╗
+█████╗  ███████║██████╔╝██╔██╗ ██║██║  ███╗██████╔╝██║██║  ██║
+██╔══╝  ██╔══██║██╔══██╗██║╚██╗██║██║   ██║██╔══██╗██║██║  ██║
+███████╗██║  ██║██║  ██║██║ ╚████║╚██████╔╝██║  ██║██║██████╔╝
+╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚═╝╚═════╝ 
 ```
 
-# 🛡️ MetaYield: The Smart USDC Savings Vault
+# 🛡️ EarnGrid: The Smart USDC Savings Vault
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Network: Base](https://img.shields.io/badge/Network-Base-blue)](https://base.org)
-[![Status: Beta](https://img.shields.io/badge/Status-Beta-orange)](https://github.com/NukeThemAII/MetaYield)
+[![Status: Beta](https://img.shields.io/badge/Status-Beta-orange)](https://github.com/NukeThemAII/EarnGrid)
 
 > **Earn 7-10% APY on your USDC. Automated, Diversified, Secure.**
 
 ---
 
-## 🐣 For Everyone: What is MetaYield?
+## 🐣 For Everyone: What is EarnGrid?
 
 Imagine a **high-yield savings account** that is smarter than a bank.
 
-When you deposit your USDC (digital dollars) into MetaYield, our "Vault" automatically spreads your money across the safest, highest-paying lending opportunities on the Base network.
+When you deposit your USDC (digital dollars) into EarnGrid, our "Vault" automatically spreads your money across the safest, highest-paying lending opportunities on the Base network.
 
 *   **💸 Earn Passive Income:** Your money works for you 24/7.
 *   **🧘 Stress-Free:** We handle the complex moving parts. You just deposit and watch it grow.
@@ -34,7 +34,7 @@ When you deposit your USDC (digital dollars) into MetaYield, our "Vault" automat
 
 ## 🛠️ For Developers: The Technical Deep Dive
 
-MetaYield is a **sophisticated ERC-4626 "Vault-of-Vaults"** architecture running on the Base L2 network. It aggregates user liquidity and allocates it to a whitelist of synchronous downstream strategies (currently MetaMorpho markets).
+EarnGrid is a **sophisticated ERC-4626 "Vault-of-Vaults"** architecture running on the Base L2 network. It aggregates user liquidity and allocates it to a whitelist of synchronous downstream strategies (currently MetaMorpho markets).
 
 ### 🏗️ Architecture
 
@@ -79,8 +79,8 @@ MetaYield is a **sophisticated ERC-4626 "Vault-of-Vaults"** architecture running
 
 ```bash
 # Clone the repo
-git clone https://github.com/NukeThemAII/MetaYield.git
-cd MetaYield
+git clone https://github.com/NukeThemAII/EarnGrid.git
+cd EarnGrid
 
 # Install dependencies
 pnpm install
@@ -147,10 +147,10 @@ We take security seriously. The system is governed by a strict separation of pow
 
 ## ⚠️ Disclaimer
 
-**MetaYield is currently in BETA.**
+**EarnGrid is currently in BETA.**
 
 This software is experimental. While we have implemented rigorous testing and safety guards, smart contract risks exist. Do not deposit funds you cannot afford to lose. This is not financial advice.
 
 ---
 
-*Built with 💙 on Base by the MetaYield Team.*
+*Built with 💙 on Base by the EarnGrid Team.*

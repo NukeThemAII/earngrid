@@ -1,4 +1,4 @@
-# MetaYield Security Audit Report
+# EarnGrid Security Audit Report
 
 **Date:** December 24, 2025  
 **Auditor:** AI Security Analyst  
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-MetaYield is a USDC savings dApp on Base implementing an ERC-4626 vault-of-vaults architecture. Users deposit USDC and receive vault shares, while funds are allocated across whitelisted yield strategies (currently MetaMorpho vaults) with caps, tiered exposure limits, and queue-based routing.
+EarnGrid is a USDC savings dApp on Base implementing an ERC-4626 vault-of-vaults architecture. Users deposit USDC and receive vault shares, while funds are allocated across whitelisted yield strategies (currently MetaMorpho vaults) with caps, tiered exposure limits, and queue-based routing.
 
 ### Overall Assessment
 
@@ -348,7 +348,7 @@ The TODO notes indicate reorg safety is pending. Implement confirmations-based r
 
 ## 8. Conclusion
 
-MetaYield demonstrates strong security engineering practices with a well-thought-out architecture, comprehensive threat modeling, and solid test coverage. The codebase is clean, readable, and follows established patterns.
+EarnGrid demonstrates strong security engineering practices with a well-thought-out architecture, comprehensive threat modeling, and solid test coverage. The codebase is clean, readable, and follows established patterns.
 
 **Key Strengths:**
 - Excellent documentation and threat modeling

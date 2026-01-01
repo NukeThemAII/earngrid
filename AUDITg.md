@@ -2,14 +2,14 @@
 
 **Date:** December 25, 2025
 **Auditor:** AI Security Analyst (Gemini CLI)
-**Target:** MetaYield (v0.1)
+**Target:** EarnGrid (v0.1)
 **Scope:** Smart Contracts, Frontend, Indexer, Documentation
 
 ---
 
 ## 1. Executive Summary
 
-MetaYield is a USDC savings dApp built on the Base network, utilizing an ERC-4626 "Vault-of-Vaults" architecture. The system allocates funds to whitelisted synchronous strategies (MetaMorpho vaults) to generate yield.
+EarnGrid is a USDC savings dApp built on the Base network, utilizing an ERC-4626 "Vault-of-Vaults" architecture. The system allocates funds to whitelisted synchronous strategies (MetaMorpho vaults) to generate yield.
 
 The audit found the system to be **structurally sound** and **well-documented**. The architecture follows established patterns for Access Control and Vault management. Significant improvements have been made in recent iterations (v2 improvements) to address previously identified high-severity issues such as performance fee manipulation and reentrancy.
 
@@ -46,11 +46,11 @@ The system is nearing production readiness for a testnet environment. Mainnet de
 #### [M-01] Share Price Manipulation (Donation) Vector on Withdrawals
 **Component:** `BlendedVault.sol`
 **Description:**
-The vault calculates `totalAssets()` by summing the `previewRedeem()` value of all underlying strategies. If an underlying strategy (even a whitelisted one) is susceptible to "donation attacks" where a direct transfer inflates its share price, the MetaYield vault's `totalAssets` will spike.
+The vault calculates `totalAssets()` by summing the `previewRedeem()` value of all underlying strategies. If an underlying strategy (even a whitelisted one) is susceptible to "donation attacks" where a direct transfer inflates its share price, the EarnGrid vault's `totalAssets` will spike.
 While the `harvest()` function includes a `maxDailyIncreaseBps` guard to prevent fee manipulation, **withdrawals** do not have this check.
 **Scenario:**
-1. Attacker holds MetaYield shares.
-2. Attacker manipulates an underlying strategy to spike its price (and thus MetaYield's `totalAssets`).
+1. Attacker holds EarnGrid shares.
+2. Attacker manipulates an underlying strategy to spike its price (and thus EarnGrid's `totalAssets`).
 3. Attacker calls `withdraw()`. Due to the inflated `totalAssets`, the attacker's shares are valued higher than they should be, allowing them to withdraw excess USDC at the expense of other users.
 **Recommendation:**
 Consider checking the `maxDailyIncreaseBps` (or a similar deviation check) within the `withdraw` flow or `totalAssets` calculation. Alternatively, ensure strict due diligence that all whitelisted strategies are chemically resistant to donation attacks (e.g., MetaMorpho's strict accounting).

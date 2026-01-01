@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const spaceMono = Space_Mono({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
-  title: "MetaYield · USDC Blended Vault",
+  title: "EarnGrid · USDC Blended Vault",
   description: "Institutional-grade USDC savings vault on Base.",
 };
 

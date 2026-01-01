@@ -1,4 +1,4 @@
-# Test Results - MetaYield v0.1
+# Test Results - EarnGrid v0.1
 
 **Date:** December 24, 2025  
 **Commit:** `f922b37` - "fix: repair fee balance test"

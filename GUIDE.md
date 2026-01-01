@@ -1,6 +1,6 @@
-# MetaYield Mainnet Deployment Guide (Base)
+# EarnGrid Mainnet Deployment Guide (Base)
 
-This guide shows step-by-step commands to deploy the MetaYield vault to Base mainnet and bring up the indexer + web UI on Ubuntu.
+This guide shows step-by-step commands to deploy the EarnGrid vault to Base mainnet and bring up the indexer + web UI on Ubuntu.
 
 Assumptions:
 - You have a Base mainnet RPC URL.

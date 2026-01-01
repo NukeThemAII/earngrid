@@ -47,7 +47,7 @@ export default async function DashboardPage() {
       <section className="space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.3em] text-muted">MetaYield Dashboard</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-muted">EarnGrid Dashboard</p>
             <h2 className="text-3xl font-semibold text-balance">
               USDC savings with guardrails, not guesswork.
             </h2>

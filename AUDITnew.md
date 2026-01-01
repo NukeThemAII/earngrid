@@ -1,4 +1,4 @@
-# MetaYield Security Audit Report (v2)
+# EarnGrid Security Audit Report (v2)
 
 **Date:** December 25, 2025  
 **Auditor:** AI Security Analyst  
@@ -362,7 +362,7 @@ Next.js App Router
 
 ## 8. Conclusion
 
-The MetaYield codebase has improved significantly since the initial audit:
+The EarnGrid codebase has improved significantly since the initial audit:
 
 | Metric | Before | After |
 |--------|--------|-------|

@@ -47,7 +47,7 @@ export default async function VaultPage() {
             <CardTitle className="text-sm text-muted">Fee disclosure</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted">
-            MetaYield charges a 3% performance fee only on gains above the high-water mark. There is
+            EarnGrid charges a 3% performance fee only on gains above the high-water mark. There is
             no management fee. Fees are minted as vault shares to the fee recipient.
           </CardContent>
         </Card>
