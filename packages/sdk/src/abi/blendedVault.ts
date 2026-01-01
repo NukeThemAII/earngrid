@@ -140,6 +140,13 @@ export const blendedVaultAbi = [
   },
   {
     type: "function",
+    name: "cachedStrategyAssets",
+    stateMutability: "view",
+    inputs: [{ name: "strategy", type: "address" }],
+    outputs: [{ type: "uint256" }],
+  },
+  {
+    type: "function",
     name: "strategyAssets",
     stateMutability: "view",
     inputs: [{ name: "strategy", type: "address" }],
@@ -316,6 +323,13 @@ export const blendedVaultAbi = [
   },
   {
     type: "function",
+    name: "setTimelockDelay",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "newDelay", type: "uint256" }],
+    outputs: [],
+  },
+  {
+    type: "function",
     name: "scheduleMaxDailyIncreaseBps",
     stateMutability: "nonpayable",
     inputs: [
@@ -326,10 +340,30 @@ export const blendedVaultAbi = [
   },
   {
     type: "function",
+    name: "scheduleTimelockDelay",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "newDelay", type: "uint256" },
+      { name: "salt", type: "bytes32" },
+    ],
+    outputs: [{ type: "bytes32" }],
+  },
+  {
+    type: "function",
     name: "executeMaxDailyIncreaseBps",
     stateMutability: "nonpayable",
     inputs: [
       { name: "newBps", type: "uint256" },
+      { name: "salt", type: "bytes32" },
+    ],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "executeTimelockDelay",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "newDelay", type: "uint256" },
       { name: "salt", type: "bytes32" },
     ],
     outputs: [],

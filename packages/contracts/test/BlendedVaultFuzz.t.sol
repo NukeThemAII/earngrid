@@ -12,7 +12,7 @@ contract BlendedVaultFuzzTest is BlendedVaultBaseTest {
         _deposit(user, 1_000 * USDC);
     }
 
-    function testFuzz_convertToSharesMonotonic(uint256 a, uint256 b) public {
+    function testFuzz_convertToSharesMonotonic(uint256 a, uint256 b) public view {
         uint256 assetsA = bound(a, 1, 1_000_000 * USDC);
         uint256 assetsB = bound(b, assetsA, 1_000_000 * USDC);
 
@@ -22,7 +22,7 @@ contract BlendedVaultFuzzTest is BlendedVaultBaseTest {
         assertLe(sharesA, sharesB);
     }
 
-    function testFuzz_convertToAssetsMonotonic(uint256 a, uint256 b) public {
+    function testFuzz_convertToAssetsMonotonic(uint256 a, uint256 b) public view {
         uint256 sharesA = bound(a, 1, 1_000_000 * USDC);
         uint256 sharesB = bound(b, sharesA, 1_000_000 * USDC);
 

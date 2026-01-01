@@ -89,4 +89,26 @@ contract BlendedVaultTimelockTest is BlendedVaultBaseTest {
 
         assertEq(vault.maxDailyIncreaseBps(), 100);
     }
+
+    function testTimelockDelayDecreaseRequiresSchedule() public {
+        uint256 oldDelay = vault.timelockDelay();
+        uint256 increased = oldDelay + 1 days;
+
+        vm.prank(owner);
+        vault.setTimelockDelay(increased);
+
+        vm.prank(owner);
+        vm.expectRevert(BlendedVault.TimelockRequired.selector);
+        vault.setTimelockDelay(oldDelay);
+
+        bytes32 salt = keccak256("TIMELOCK_DELAY");
+        vm.prank(owner);
+        vault.scheduleTimelockDelay(oldDelay, salt);
+
+        vm.warp(block.timestamp + increased);
+        vm.prank(owner);
+        vault.executeTimelockDelay(oldDelay, salt);
+
+        assertEq(vault.timelockDelay(), oldDelay);
+    }
 }

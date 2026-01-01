@@ -120,6 +120,8 @@ capAssets: uint256
 
 currentAssets: uint256 (derived; optional cached)
 
+cachedStrategyAssets: uint256 (last known assets, used if previewRedeem reverts)
+
 isSynchronous: bool (v0.1 default true)
 
 notesHash / metadataURI (optional)
@@ -164,6 +166,8 @@ strategy enabled
 per‑strategy capAssets
 
 tier exposure limits
+
+strategy maxDeposit limits
 
 Notes:
 
@@ -355,6 +359,8 @@ Timelock for risk-increasing changes.
 Guardian emergency pause.
 
 Prefer synchronous strategies in v0.1.
+
+If a strategy reverts on previewRedeem, cached strategy assets are used for accounting to avoid vault-wide DoS.
 
 Extensive Foundry tests and invariants.
 

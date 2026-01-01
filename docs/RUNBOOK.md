@@ -72,6 +72,7 @@ Operational guide for the USDC Blended Vault (EarnGrid) covering deployment, con
 - Curator: schedule/execute strategy additions, cap and tier changes.
 - Allocator: rebalance and harvest; update queues.
 - Guardian: pause deposits/withdrawals, emergency remove strategies.
+Note: timelock delay reductions must be scheduled and executed after the current delay.
 
 ## Operations
 - Harvest cadence: hourly/daily (respect `MIN_HARVEST_INTERVAL`).

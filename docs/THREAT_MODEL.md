@@ -110,6 +110,10 @@ role escalation bugs
 
 timelock bypass
 
+Strategy accounting / valuation
+
+previewRedeem reverts causing totalAssets() to revert
+
 Operational / offchain
 
 indexer misreporting APY (UI deception)
@@ -219,6 +223,8 @@ Separate guardian powers for emergency risk reduction.
 
 Multisig with operational security + monitoring.
 
+Timelock delay reductions must be scheduled and executed after delay.
+
 T9: Performance fee over-collection
 
 Threat: fee minted when there is no real profit or minted too much.
@@ -244,6 +250,16 @@ Clearly define pause semantics in docs.
 Consider “pause deposits only” vs “pause withdrawals” separate.
 
 Governance transparency and monitoring.
+
+T11: Strategy accounting revert DoS
+
+Threat: a strategy reverts on previewRedeem/valuation, causing vault accounting to revert.
+
+Mitigations
+
+Use safe previewRedeem with cached strategy assets to keep totalAssets functional.
+
+Guardian can pause deposits/withdrawals and unwind where possible.
 
 7) Monitoring & incident response
 Onchain monitoring (alerts)
@@ -283,6 +299,8 @@ Donation manipulation simulation where possible (T4)
 Fork tests vs target strategies (T5/T6)
 
 Role/timelock tests (T7/T8)
+
+Accounting failure fallback tests (T11)
 
 Fee math tests with multiple users (T9)
 

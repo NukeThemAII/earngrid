@@ -6,6 +6,16 @@
 pnpm -C packages/contracts test
 ```
 
+```bash
+forge test
+```
+
+### Latest run
+
+- Date: 2026-01-01
+- Command: `forge test`
+- Result: 26 passed, 0 failed, 0 skipped
+
 ### Test Files
 
 | File | Tests | Coverage |
@@ -13,9 +23,9 @@ pnpm -C packages/contracts test
 | `BlendedVault.t.sol` | 10 | Core flows |
 | `BlendedVaultFees.t.sol` | 6 | Fee logic |
 | `BlendedVaultFuzz.t.sol` | 4 | Fuzz/invariants |
-| `BlendedVaultTimelock.t.sol` | 4 | Timelock |
+| `BlendedVaultTimelock.t.sol` | 5 | Timelock |
 | `BlendedVaultReentrancy.t.sol` | 1 | Reentrancy |
-| **Total** | **25** | |
+| **Total** | **26** | |
 
 ### Run with verbosity
 

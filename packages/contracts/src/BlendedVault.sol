@@ -30,7 +30,9 @@ contract BlendedVault is ERC4626, AccessControl, ReentrancyGuard {
     error NotScheduled();
     error SameBlockHarvest();
     error StrategyAlreadyRegistered();
+    error StrategyAccountingFailed(address strategy);
     error StrategyDisabled();
+    error StrategyDepositLimitExceeded(address strategy, uint256 amount, uint256 maxDeposit);
     error StrategyNotRegistered();
     error StrategyNotSynchronous();
     error TierLimitExceeded();
@@ -52,6 +54,7 @@ contract BlendedVault is ERC4626, AccessControl, ReentrancyGuard {
     bytes32 private constant ACTION_ADD_STRATEGY = keccak256("ADD_STRATEGY");
     bytes32 private constant ACTION_CAP_INCREASE = keccak256("CAP_INCREASE");
     bytes32 private constant ACTION_MAX_DAILY_INCREASE = keccak256("MAX_DAILY_INCREASE");
+    bytes32 private constant ACTION_TIMELOCK_DELAY = keccak256("TIMELOCK_DELAY");
     bytes32 private constant ACTION_TIER_LIMITS = keccak256("TIER_LIMITS");
 
     struct StrategyConfig {
@@ -66,6 +69,7 @@ contract BlendedVault is ERC4626, AccessControl, ReentrancyGuard {
     address[] public strategyList;
     address[] public depositQueue;
     address[] public withdrawQueue;
+    mapping(address => uint256) public cachedStrategyAssets;
 
     uint256[3] public tierMaxBps;
     uint256 public idleLiquidityBps;
@@ -214,7 +218,7 @@ contract BlendedVault is ERC4626, AccessControl, ReentrancyGuard {
         if (shares == 0) {
             return 0;
         }
-        return IERC4626(strategy).previewRedeem(shares);
+        return _safePreviewRedeem(strategy, shares);
     }
 
     function deposit(uint256 assets, address receiver)
@@ -386,12 +390,31 @@ contract BlendedVault is ERC4626, AccessControl, ReentrancyGuard {
     }
 
     function setTimelockDelay(uint256 newDelay) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _setTimelockDelay(newDelay, true);
+    }
+
+    function scheduleTimelockDelay(uint256 newDelay, bytes32 salt)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+        returns (bytes32 id)
+    {
         if (newDelay < MIN_TIMELOCK_DELAY) {
             revert InvalidTimelockDelay();
         }
-        uint256 oldDelay = timelockDelay;
-        timelockDelay = newDelay;
-        emit TimelockDelayUpdated(oldDelay, newDelay);
+        bytes memory data = abi.encode(newDelay);
+        id = _scheduleChange(ACTION_TIMELOCK_DELAY, data, salt);
+    }
+
+    function executeTimelockDelay(uint256 newDelay, bytes32 salt)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
+        if (newDelay < MIN_TIMELOCK_DELAY) {
+            revert InvalidTimelockDelay();
+        }
+        bytes memory data = abi.encode(newDelay);
+        _consumeChange(ACTION_TIMELOCK_DELAY, data, salt);
+        _setTimelockDelay(newDelay, false);
     }
 
     function scheduleAddStrategy(
@@ -424,6 +447,7 @@ contract BlendedVault is ERC4626, AccessControl, ReentrancyGuard {
         }
         config.enabled = false;
         _removeFromQueue(depositQueue, strategy);
+        _removeFromQueue(withdrawQueue, strategy);
         emit StrategyRemoved(strategy);
         emit QueuesUpdated(keccak256(abi.encode(depositQueue)), keccak256(abi.encode(withdrawQueue)));
     }
@@ -435,6 +459,7 @@ contract BlendedVault is ERC4626, AccessControl, ReentrancyGuard {
         }
         config.enabled = false;
         _removeFromQueue(depositQueue, strategy);
+        _removeFromQueue(withdrawQueue, strategy);
         emit StrategyRemoved(strategy);
         emit QueuesUpdated(keccak256(abi.encode(depositQueue)), keccak256(abi.encode(withdrawQueue)));
     }
@@ -701,9 +726,14 @@ contract BlendedVault is ERC4626, AccessControl, ReentrancyGuard {
             revert StrategyNotSynchronous();
         }
 
-        uint256 currentAssets = strategyAssets(strategy);
+        uint256 currentAssets = _strategyAssetsStrict(strategy);
         if (currentAssets + amount > config.capAssets) {
             revert InvalidCap();
+        }
+
+        uint256 maxDepositAmount = _maxDepositOrZero(strategy);
+        if (amount > maxDepositAmount) {
+            revert StrategyDepositLimitExceeded(strategy, amount, maxDepositAmount);
         }
 
         uint256 tierLimit = (total * tierMaxBps[config.tier]) / MAX_BPS;
@@ -714,6 +744,7 @@ contract BlendedVault is ERC4626, AccessControl, ReentrancyGuard {
         IERC20(asset()).forceApprove(strategy, amount);
         IERC4626(strategy).deposit(amount, address(this));
 
+        cachedStrategyAssets[strategy] = currentAssets + amount;
         tierExposure[config.tier] += amount;
     }
 
@@ -723,6 +754,8 @@ contract BlendedVault is ERC4626, AccessControl, ReentrancyGuard {
             revert NotEnoughLiquidity();
         }
         IERC4626(strategy).withdraw(amount, address(this), address(this));
+        uint256 cached = cachedStrategyAssets[strategy];
+        cachedStrategyAssets[strategy] = cached > amount ? cached - amount : 0;
     }
 
     function _maxAllocatable(
@@ -735,8 +768,12 @@ contract BlendedVault is ERC4626, AccessControl, ReentrancyGuard {
         if (!config.registered || !config.enabled || !config.isSynchronous) {
             return 0;
         }
+        uint256 shares = IERC20(strategy).balanceOf(address(this));
+        (uint256 currentAssets, bool ok) = _previewRedeemWithStatus(strategy, shares);
+        if (!ok) {
+            return 0;
+        }
         uint256 maxByCap = 0;
-        uint256 currentAssets = strategyAssets(strategy);
         if (config.capAssets > currentAssets) {
             maxByCap = config.capAssets - currentAssets;
         }
@@ -745,7 +782,7 @@ contract BlendedVault is ERC4626, AccessControl, ReentrancyGuard {
         if (tierLimit > tierExposure[config.tier]) {
             maxByTier = tierLimit - tierExposure[config.tier];
         }
-        uint256 maxDepositAmount = IERC4626(strategy).maxDeposit(address(this));
+        uint256 maxDepositAmount = _maxDepositOrZero(strategy);
         uint256 max = _min(remaining, _min(maxByCap, _min(maxByTier, maxDepositAmount)));
         return max;
     }
@@ -887,11 +924,8 @@ contract BlendedVault is ERC4626, AccessControl, ReentrancyGuard {
             if (!config.registered) {
                 continue;
             }
-            uint256 assets = 0;
             uint256 shares = IERC20(strategy).balanceOf(address(this));
-            if (shares > 0) {
-                assets = _safePreviewRedeem(strategy, shares);
-            }
+            uint256 assets = _safePreviewRedeem(strategy, shares);
             exposure[config.tier] += assets;
         }
     }
@@ -908,14 +942,37 @@ contract BlendedVault is ERC4626, AccessControl, ReentrancyGuard {
         return (feeAssets * supply) / (total - feeAssets);
     }
 
-    /// @notice Safely call previewRedeem on a strategy, returning 0 if it reverts
+    /// @notice Safely call previewRedeem on a strategy, falling back to cached assets
     /// @dev Prevents a reverting/bricked strategy from DOS'ing the vault
     function _safePreviewRedeem(address strategy, uint256 shares) internal view returns (uint256) {
+        (uint256 assets,) = _previewRedeemWithStatus(strategy, shares);
+        return assets;
+    }
+
+    function _previewRedeemWithStatus(address strategy, uint256 shares)
+        internal
+        view
+        returns (uint256 assets, bool ok)
+    {
+        if (shares == 0) {
+            return (0, true);
+        }
+        try IERC4626(strategy).previewRedeem(shares) returns (uint256 value) {
+            return (value, true);
+        } catch {
+            return (cachedStrategyAssets[strategy], false);
+        }
+    }
+
+    function _strategyAssetsStrict(address strategy) internal view returns (uint256) {
+        uint256 shares = IERC20(strategy).balanceOf(address(this));
+        if (shares == 0) {
+            return 0;
+        }
         try IERC4626(strategy).previewRedeem(shares) returns (uint256 assets) {
             return assets;
         } catch {
-            // Strategy is bricked/paused - treat as 0 value for accounting
-            return 0;
+            revert StrategyAccountingFailed(strategy);
         }
     }
 
@@ -937,6 +994,26 @@ contract BlendedVault is ERC4626, AccessControl, ReentrancyGuard {
             }
         }
         return liquidity;
+    }
+
+    function _maxDepositOrZero(address strategy) internal view returns (uint256) {
+        try IERC4626(strategy).maxDeposit(address(this)) returns (uint256 amount) {
+            return amount;
+        } catch {
+            return 0;
+        }
+    }
+
+    function _setTimelockDelay(uint256 newDelay, bool enforceDecreaseGuard) internal {
+        if (newDelay < MIN_TIMELOCK_DELAY) {
+            revert InvalidTimelockDelay();
+        }
+        uint256 oldDelay = timelockDelay;
+        if (enforceDecreaseGuard && newDelay < oldDelay) {
+            revert TimelockRequired();
+        }
+        timelockDelay = newDelay;
+        emit TimelockDelayUpdated(oldDelay, newDelay);
     }
 
     function _min(uint256 a, uint256 b) internal pure returns (uint256) {

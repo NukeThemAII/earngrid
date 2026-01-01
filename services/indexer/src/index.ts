@@ -151,11 +151,21 @@ function createRateLimiter(options: { windowMs: number; max: number }) {
 }
 
 function computeApy(startPrice: string, endPrice: string, days: number): number {
-  const start = Number(startPrice);
-  const end = Number(endPrice);
-  if (!Number.isFinite(start) || !Number.isFinite(end) || start === 0) {
+  let start: bigint;
+  let end: bigint;
+  try {
+    start = BigInt(startPrice);
+    end = BigInt(endPrice);
+  } catch {
     return 0;
   }
-  const ratio = end / start;
+  if (start === 0n || end === 0n) {
+    return 0;
+  }
+  const scale = 10n ** 18n;
+  const ratio = Number((end * scale) / start) / 1e18;
+  if (!Number.isFinite(ratio) || ratio <= 0) {
+    return 0;
+  }
   return Math.pow(ratio, 365 / days) - 1;
 }

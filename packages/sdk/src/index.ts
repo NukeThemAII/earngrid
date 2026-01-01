@@ -369,6 +369,30 @@ export function encodeExecuteTierMaxBps(newBps: [bigint, bigint, bigint], salt: 
   });
 }
 
+export function encodeSetTimelockDelay(newDelay: bigint): Hex {
+  return encodeFunctionData({
+    abi: blendedVaultAbi,
+    functionName: "setTimelockDelay",
+    args: [newDelay],
+  });
+}
+
+export function encodeScheduleTimelockDelay(newDelay: bigint, salt: Hex): Hex {
+  return encodeFunctionData({
+    abi: blendedVaultAbi,
+    functionName: "scheduleTimelockDelay",
+    args: [newDelay, salt],
+  });
+}
+
+export function encodeExecuteTimelockDelay(newDelay: bigint, salt: Hex): Hex {
+  return encodeFunctionData({
+    abi: blendedVaultAbi,
+    functionName: "executeTimelockDelay",
+    args: [newDelay, salt],
+  });
+}
+
 function parseStrategyConfig(
   config: readonly [boolean, boolean, bigint, bigint, boolean],
 ): StrategyConfig {

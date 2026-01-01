@@ -262,11 +262,11 @@ export function AdminActions() {
           </Button>
         </div>
         <div className="space-y-2">
-          <p className="text-xs text-muted">Deposit queue (one strategy per line).</p>
+          <p className="text-xs text-muted">Deposit queue (comma or newline separated).</p>
           <Input
             value={depositQueueInput}
             onChange={(event) => setDepositQueueInput(event.target.value)}
-            placeholder="0xStrategyA\n0xStrategyB"
+            placeholder="0xStrategyA,0xStrategyB"
           />
           <Button
             variant="outline"
@@ -277,11 +277,11 @@ export function AdminActions() {
           </Button>
         </div>
         <div className="space-y-2">
-          <p className="text-xs text-muted">Withdraw queue (one strategy per line).</p>
+          <p className="text-xs text-muted">Withdraw queue (comma or newline separated).</p>
           <Input
             value={withdrawQueueInput}
             onChange={(event) => setWithdrawQueueInput(event.target.value)}
-            placeholder="0xStrategyA\n0xStrategyB"
+            placeholder="0xStrategyA,0xStrategyB"
           />
           <Button
             variant="outline"
@@ -314,7 +314,7 @@ export function AdminActions() {
 
 function parseQueueInput(value: string): { entries: `0x${string}`[]; error?: string } {
   const entries = value
-    .split("\n")
+    .split(/[\s,]+/)
     .map((entry) => entry.trim())
     .filter(Boolean);
 
