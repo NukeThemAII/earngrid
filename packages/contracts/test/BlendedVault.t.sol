@@ -6,6 +6,7 @@ import "forge-std/Test.sol";
 import {BlendedVault} from "../src/BlendedVault.sol";
 import {BlendedVaultBaseTest} from "./BlendedVaultBase.t.sol";
 import {IERC20} from "openzeppelin-contracts/token/ERC20/IERC20.sol";
+import {ERC4626} from "openzeppelin-contracts/token/ERC20/extensions/ERC4626.sol";
 
 contract BlendedVaultTest is BlendedVaultBaseTest {
     function testDepositAllocatesByCap() public {
@@ -42,7 +43,14 @@ contract BlendedVaultTest is BlendedVaultBaseTest {
         stratB.setLiquidityLimit(100 * USDC);
 
         vm.prank(user);
-        vm.expectRevert(BlendedVault.NotEnoughLiquidity.selector);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                ERC4626.ERC4626ExceededMaxWithdraw.selector,
+                user,
+                300 * USDC,
+                100 * USDC
+            )
+        );
         vault.withdraw(300 * USDC, user, user);
     }
 

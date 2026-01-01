@@ -10,12 +10,12 @@ pnpm -C packages/contracts test
 
 | File | Tests | Coverage |
 |------|-------|----------|
-| `BlendedVault.t.sol` | 9 | Core flows |
+| `BlendedVault.t.sol` | 10 | Core flows |
 | `BlendedVaultFees.t.sol` | 6 | Fee logic |
 | `BlendedVaultFuzz.t.sol` | 4 | Fuzz/invariants |
 | `BlendedVaultTimelock.t.sol` | 4 | Timelock |
 | `BlendedVaultReentrancy.t.sol` | 1 | Reentrancy |
-| **Total** | **24** | |
+| **Total** | **25** | |
 
 ### Run with verbosity
 
